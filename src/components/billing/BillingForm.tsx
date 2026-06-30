@@ -10,6 +10,7 @@ import {
   type SilverCalculation,
 } from "@/lib/utils";
 import { BillPrintView } from "./BillPrintView";
+import { EstimateSlipView } from "./EstimateSlipView";
 
 interface Category {
   id: string;
@@ -138,6 +139,8 @@ export function BillingForm({
   const [saved, setSaved] = useState<{ id: string; billNumber: string } | null>(null);
   const [formDirty, setFormDirty] = useState(false);
   const [error, setError] = useState("");
+  const [showEstimate, setShowEstimate] = useState(false);
+  const [quoteRef] = useState(() => `EST-${Date.now().toString(36).toUpperCase()}`);
 
   // GST — editable CGST and SGST, defaulting to 1.5% each
   const [cgstPercent, setCgstPercent] = useState<number | "">(1.5);
@@ -674,15 +677,19 @@ export function BillingForm({
                       step="0.01" min="0" className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                   </td>
                   <td className="px-3 py-2">
-                    <div className="flex gap-1">
-                      <select value={item.makingChargeType} onChange={(e) => updateItem(item.id, { makingChargeType: e.target.value })}
-                        className="px-1 py-1.5 border border-slate-200 rounded text-xs focus:outline-none w-16">
-                        <option value="PER_GRAM">₹/g</option>
-                        <option value="PERCENT">%</option>
-                        <option value="FIXED">Fixed</option>
-                      </select>
+                    <div className="space-y-1">
+                      <div className="flex border border-slate-200 rounded overflow-hidden text-xs w-fit">
+                        {[{ v: "PER_GRAM", l: "₹/g" }, { v: "PERCENT", l: "%" }, { v: "FIXED", l: "Flat" }].map(({ v, l }) => (
+                          <button key={v} type="button"
+                            onClick={() => updateItem(item.id, { makingChargeType: v })}
+                            className={`px-2 py-1 font-medium transition-colors ${item.makingChargeType === v ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+                            {l}
+                          </button>
+                        ))}
+                      </div>
                       <input type="number" value={item.makingChargeValue || ""} onChange={(e) => updateItem(item.id, { makingChargeValue: parseFloat(e.target.value) || 0 })}
-                        step="0.5" min="0" className="flex-1 px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                        step="0.5" min="0" placeholder="0"
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right text-xs text-slate-700 font-medium">{formatCurrency(item.silverValue)}</td>
@@ -757,10 +764,12 @@ export function BillingForm({
               <span className="text-slate-500">Silver Value</span>
               <span className="font-medium">{formatCurrency(items.reduce((s, i) => s + i.silverValue, 0))}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Making Charges</span>
-              <span className="font-medium">{formatCurrency(totalMaking)}</span>
-            </div>
+            {totalMaking > 0 && (
+              <div className="flex justify-between">
+                <span className="text-slate-500">Making Charges</span>
+                <span className="font-medium">{formatCurrency(totalMaking)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-slate-400 text-xs">
               <span>Wastage Amount</span>
               <span>{formatCurrency(totalWastage)}</span>
@@ -904,13 +913,81 @@ export function BillingForm({
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
             )}
 
+            {/* Estimate slip — share with customer before finalising */}
+            <button
+              type="button"
+              onClick={() => setShowEstimate(true)}
+              disabled={items.every((i) => !i.itemName.trim())}
+              className="w-full border-2 border-burgundy-400 text-burgundy-600 font-semibold py-3 rounded-xl hover:bg-burgundy-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Print Estimate / Quote Slip
+            </button>
+
             <button onClick={handleSave} disabled={loading}
               className="w-full bg-burgundy-500 hover:bg-burgundy-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md disabled:opacity-70 text-lg">
-              {loading ? "Saving Bill..." : "Save & Print Bill"}
+              {loading ? "Saving Bill..." : "Confirm & Save Bill"}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Estimate Slip Modal */}
+      {showEstimate && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center print:bg-transparent">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 flex flex-col max-h-[92vh] print:shadow-none print:max-w-full print:rounded-none print:mx-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 print:hidden">
+              <div>
+                <h3 className="font-bold text-slate-800">Estimate Slip</h3>
+                <p className="text-xs text-slate-400">Share this with the customer for review</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-700"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print Slip
+                </button>
+                <button onClick={() => setShowEstimate(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <EstimateSlipView
+                quoteRef={quoteRef}
+                customer={customer}
+                items={items}
+                subtotal={subtotal}
+                totalMaking={totalMaking}
+                totalGST={totalGST}
+                cgstPercent={cgstPercent === "" ? 0 : cgstPercent}
+                sgstPercent={sgstPercent === "" ? 0 : sgstPercent}
+                discount={discount}
+                oldSilverDeduction={oldSilverDeduction}
+                oldSilverWeight={oldSilverWeight}
+                oldSilverRate={oldSilverRate}
+                roundOff={roundOff}
+                total={total}
+                silverRate999={latestRate?.rate999 || 0}
+                validMinutes={60}
+              />
+            </div>
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 rounded-b-2xl print:hidden">
+              <p className="text-xs text-slate-500 text-center">
+                Once customer confirms, click <strong>Confirm &amp; Save Bill</strong> to finalise.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

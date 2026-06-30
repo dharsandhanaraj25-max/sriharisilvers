@@ -38,6 +38,14 @@ export async function POST(request: Request) {
   if (user.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
+
+  // Auto-generate barcode if not provided
+  let barcode = body.barcode?.trim() || null;
+  if (!barcode) {
+    const count = await prisma.product.count();
+    barcode = `SHS${String(count + 1).padStart(5, "0")}`;
+  }
+
   const product = await prisma.product.create({
     data: {
       categoryId: body.categoryId,
@@ -51,7 +59,7 @@ export async function POST(request: Request) {
       makingChargeType: body.makingChargeType || "PER_GRAM",
       makingChargeValue: parseFloat(body.makingChargeValue) || 0,
       wastagePercent: parseFloat(body.wastagePercent) || 0,
-      barcode: body.barcode || null,
+      barcode,
       currentStock: parseFloat(body.currentStock) || 0,
       minStock: parseFloat(body.minStock) || 1,
     },

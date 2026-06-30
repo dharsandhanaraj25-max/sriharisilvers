@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { BarcodeDisplay } from "@/components/ui/BarcodeDisplay";
+import { BarcodeLabelPrint } from "@/components/ui/BarcodeLabelPrint";
 
 interface Category { id: string; name: string; }
 interface Product {
@@ -32,6 +34,8 @@ export default function InventoryPage() {
     barcode: "", currentStock: "", minStock: "1", description: "",
   });
   const [saving, setSaving] = useState(false);
+  const [labelProduct, setLabelProduct] = useState<Product | null>(null);
+  const [showBarcodes, setShowBarcodes] = useState(false);
 
   async function fetchData() {
     setLoading(true);
@@ -80,11 +84,22 @@ export default function InventoryPage() {
           <h1 className="text-2xl font-bold text-slate-800">Inventory</h1>
           <p className="text-slate-500 text-sm mt-1">{products.length} products {lowStockCount > 0 && <span className="text-red-500 font-medium">· {lowStockCount} low stock</span>}</p>
         </div>
-        <button onClick={() => { setEditProduct(null); setForm({ categoryId:"", name:"", purity:"999", grossWeight:"", netWeight:"", stoneWeight:"", makingChargeType:"PER_GRAM", makingChargeValue:"", wastagePercent:"", barcode:"", currentStock:"", minStock:"1", description:"" }); setShowForm(true); }}
-          className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Add Product
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowBarcodes(!showBarcodes)}
+            className={`px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 border transition-colors ${showBarcodes ? "bg-slate-800 text-white border-slate-800" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+            </svg>
+            {showBarcodes ? "Hide Barcodes" : "Show Barcodes"}
+          </button>
+          <button onClick={() => { setEditProduct(null); setForm({ categoryId:"", name:"", purity:"999", grossWeight:"", netWeight:"", stoneWeight:"", makingChargeType:"PER_GRAM", makingChargeValue:"", wastagePercent:"", barcode:"", currentStock:"", minStock:"1", description:"" }); setShowForm(true); }}
+            className="text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2" style={{ backgroundColor: "#800020" }}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Product
+          </button>
+        </div>
       </div>
 
       {/* Add/Edit Form */}
@@ -200,24 +215,25 @@ export default function InventoryPage() {
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500">Making</th>
                 <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">Wastage</th>
                 <th className="text-center px-5 py-3 text-xs font-semibold text-slate-500">Stock</th>
-                <th className="text-center px-5 py-3 text-xs font-semibold text-slate-500">Action</th>
+                {showBarcodes && <th className="text-center px-5 py-3 text-xs font-semibold text-slate-500">Barcode</th>}
+              <th className="text-center px-5 py-3 text-xs font-semibold text-slate-500">Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-slate-400">Loading...</td></tr>
+                <tr><td colSpan={showBarcodes ? 9 : 8} className="text-center py-12 text-slate-400">Loading...</td></tr>
               ) : products.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-12 text-slate-400">No products found</td></tr>
+                <tr><td colSpan={showBarcodes ? 9 : 8} className="text-center py-12 text-slate-400">No products found</td></tr>
               ) : (
                 products.map((p) => (
                   <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td className="px-5 py-3">
                       <p className="font-semibold text-slate-800">{p.name}</p>
-                      {p.barcode && <p className="text-xs text-slate-400 font-mono">{p.barcode}</p>}
+                      <p className="text-xs text-slate-400 font-mono mt-0.5">{p.barcode || "—"}</p>
                     </td>
                     <td className="px-5 py-3 text-slate-500">{p.category.name}</td>
                     <td className="px-5 py-3 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">{p.purity}</span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{p.purity}</span>
                     </td>
                     <td className="px-5 py-3 text-right text-slate-700 font-medium">{p.netWeight.toFixed(3)}g</td>
                     <td className="px-5 py-3 text-slate-600 text-xs">
@@ -233,8 +249,28 @@ export default function InventoryPage() {
                         {p.currentStock} pcs
                       </span>
                     </td>
+                    {showBarcodes && (
+                      <td className="px-5 py-3 text-center">
+                        {p.barcode ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <BarcodeDisplay value={p.barcode} height={32} fontSize={8} />
+                            <button
+                              onClick={() => setLabelProduct(p)}
+                              className="text-xs font-medium px-2 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100"
+                            >
+                              Print Label
+                            </button>
+                          </div>
+                        ) : <span className="text-slate-300 text-xs">—</span>}
+                      </td>
+                    )}
                     <td className="px-5 py-3 text-center">
-                      <button onClick={() => openEdit(p)} className="text-amber-600 hover:text-amber-700 text-xs font-medium">Edit</button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => openEdit(p)} className="text-xs font-medium text-slate-600 hover:text-slate-800 px-2 py-1 rounded border border-slate-200 hover:bg-slate-50">Edit</button>
+                        {!showBarcodes && p.barcode && (
+                          <button onClick={() => setLabelProduct(p)} className="text-xs font-medium text-slate-600 hover:text-slate-800 px-2 py-1 rounded border border-slate-200 hover:bg-slate-50">Label</button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -243,6 +279,13 @@ export default function InventoryPage() {
           </table>
         </div>
       </div>
+
+      {labelProduct && labelProduct.barcode && (
+        <BarcodeLabelPrint
+          product={{ ...labelProduct, barcode: labelProduct.barcode }}
+          onClose={() => setLabelProduct(null)}
+        />
+      )}
     </div>
   );
 }

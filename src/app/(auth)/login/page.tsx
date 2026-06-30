@@ -35,79 +35,33 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left — Branding panel */}
       <div
-        className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
         style={{ backgroundColor: "#800020" }}
       >
         {/* Decorative rings */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full" style={{ border: "1px solid rgba(255,255,255,0.08)" }} />
-        <div className="absolute -bottom-32 -right-20 w-[480px] h-[480px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.08)" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.04)" }} />
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.07)" }} />
+        <div className="absolute -bottom-40 -right-28 w-[550px] h-[550px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.07)" }} />
 
-        {/* Top section */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-10">
-            <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black text-white shadow-lg"
-              style={{ backgroundColor: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}
-            >
-              SHS
-            </div>
-            <div>
-              <p className="text-xs tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.5)" }}>Salem, Tamil Nadu</p>
-              <h1 className="text-white text-xl font-bold">Srihari Silvers</h1>
-            </div>
+        <div className="relative z-10 text-center">
+          {/* Badge */}
+          <div
+            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl text-2xl font-black text-white mb-8 shadow-xl"
+            style={{ backgroundColor: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}
+          >
+            SHS
           </div>
 
-          <h2 className="text-white text-4xl font-extrabold leading-tight mb-3">
-            Pure Silver.<br />Trusted Always.
-          </h2>
-          <p className="text-sm leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Salem&apos;s premier silver jewellery destination — hallmarked, GST-compliant, and customer-first since day one.
+          <h1 className="text-white text-5xl font-extrabold tracking-tight mb-2">
+            Srihari<br />Silvers
+          </h1>
+          <p className="text-sm mt-4 mb-10" style={{ color: "rgba(255,255,255,0.5)" }}>
+            Pure Silver. Trusted Always.
           </p>
 
-          {/* Purity grades */}
-          <div className="grid grid-cols-2 gap-3 mb-10">
-            {[
-              { grade: "999", label: "Fine Silver", note: "99.9% pure" },
-              { grade: "925", label: "Sterling Silver", note: "92.5% pure" },
-              { grade: "916", label: "Hallmarked", note: "91.6% pure" },
-              { grade: "800", label: "Traditional", note: "80.0% pure" },
-            ].map((p) => (
-              <div
-                key={p.grade}
-                className="rounded-xl p-3"
-                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="text-white font-bold text-lg">{p.grade}</span>
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{p.note}</span>
-                </div>
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{p.label}</p>
-              </div>
-            ))}
+          <div className="space-y-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-xs">Ammapet Main Road, Salem - 636001</p>
+            <p className="text-xs">Ph: 9952797597</p>
           </div>
-
-          {/* Features */}
-          <div className="space-y-2.5">
-            {[
-              "GST-compliant invoices with CGST & SGST breakdown",
-              "Live silver rate tracking across all purity grades",
-              "Customer history and repeat buyer detection",
-              "Making charges, discounts, old silver exchange",
-              "Day Book, inventory, purchase and expense ledger",
-            ].map((f, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.3)" }} />
-                <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>{f}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom — address */}
-        <div className="relative z-10 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Ammapet Main Road, Salem - 636001, Tamil Nadu</p>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>Ph: 9952797597 &nbsp;·&nbsp; Billing System v1.0</p>
         </div>
       </div>
 

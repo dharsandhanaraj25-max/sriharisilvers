@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+
+interface ShopStats {
+  rate999: number | null;
+  rate925: number | null;
+  billsToday: number;
+  totalCustomers: number;
+  totalBills: number;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,18 +18,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<ShopStats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/public/stats").then(r => r.json()).then(setStats).catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
+    const res = await signIn("credentials", { email, password, redirect: false });
     if (res?.error) {
       setError("Invalid email or password");
       setLoading(false);
@@ -33,34 +40,80 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left — Branding panel */}
+      {/* Left — Live stats panel */}
       <div
-        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 flex-col justify-between p-10 relative overflow-hidden"
         style={{ backgroundColor: "#800020" }}
       >
-        {/* Decorative rings */}
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.07)" }} />
-        <div className="absolute -bottom-40 -right-28 w-[550px] h-[550px] rounded-full" style={{ border: "1px solid rgba(255,255,255,0.07)" }} />
+        {/* Subtle decorative rings */}
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ border: "1px solid rgba(255,255,255,0.06)" }} />
+        <div className="absolute -bottom-48 -right-32 w-[650px] h-[650px] rounded-full pointer-events-none" style={{ border: "1px solid rgba(255,255,255,0.06)" }} />
 
-        <div className="relative z-10 text-center">
-          {/* Badge */}
-          <div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl text-2xl font-black text-white mb-8 shadow-xl"
-            style={{ backgroundColor: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}
-          >
-            SHS
+        {/* Top — Shop identity */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+              SHS
+            </div>
+            <span className="text-white font-bold text-lg tracking-wide">Srihari Silvers</span>
           </div>
+          <p className="text-xs mt-1 ml-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Ammapet Main Road, Salem - 636001</p>
+        </div>
 
-          <h1 className="text-white text-5xl font-extrabold tracking-tight mb-2">
-            Srihari<br />Silvers
-          </h1>
-          <p className="text-sm mt-4 mb-10" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Pure Silver. Trusted Always.
+        {/* Center — Live rate hero */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Today&apos;s Silver Rate
           </p>
 
-          <div className="space-y-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <p className="text-xs">Ammapet Main Road, Salem - 636001</p>
-            <p className="text-xs">Ph: 9952797597</p>
+          {stats?.rate999 != null ? (
+            <>
+              <div className="flex items-end gap-3 mb-2">
+                <span className="text-white font-extrabold" style={{ fontSize: "52px", lineHeight: 1 }}>
+                  ₹{stats.rate999.toFixed(2)}
+                </span>
+                <span className="text-white font-semibold text-lg mb-1">/g</span>
+              </div>
+              <p className="text-sm font-medium mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>999 Purity (Fine Silver)</p>
+              {stats.rate925 != null && (
+                <div className="flex gap-4">
+                  {[
+                    { label: "925", val: stats.rate925 },
+                    { label: "916", val: +(stats.rate925 * (916/925)).toFixed(2) },
+                    { label: "800", val: +(stats.rate925 * (800/925)).toFixed(2) },
+                  ].map(r => (
+                    <div key={r.label} className="rounded-xl px-3 py-2" style={{ backgroundColor: "rgba(255,255,255,0.08)" }}>
+                      <p className="text-xs font-bold text-white">{r.label}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>₹{r.val}/g</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div>
+              <div className="h-12 w-48 rounded-xl mb-2 animate-pulse" style={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
+              <div className="h-4 w-32 rounded animate-pulse" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
+            </div>
+          )}
+        </div>
+
+        {/* Bottom — Stat cards + address */}
+        <div className="relative z-10">
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { label: "Bills Today", value: stats?.billsToday ?? "—" },
+              { label: "Total Bills", value: stats?.totalBills ?? "—" },
+              { label: "Customers", value: stats?.totalCustomers ?? "—" },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl p-3 text-center" style={{ backgroundColor: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Ph: 9952797597 &nbsp;·&nbsp; GST Compliant Billing v1.0</p>
           </div>
         </div>
       </div>

@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
+@theme {
+  --color-burgundy-50: #fff0f3;
+  --color-burgundy-100: #ffe0e8;
+  --color-burgundy-200: #ffc0d0;
+  --color-burgundy-300: #ff8aa8;
+  --color-burgundy-400: #e05070;
+  --color-burgundy-500: #800020;
+  --color-burgundy-600: #6a001a;
+  --color-burgundy-700: #550015;
+  --color-burgundy-800: #400010;
+  --color-burgundy-900: #2a000a;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  aside, header {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  .print\:border-none {
+    border: none !important;
+  }
 }

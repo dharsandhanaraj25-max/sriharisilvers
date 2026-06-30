@@ -1,0 +1,289 @@
+// Sriharisilvers Billing System - Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        String       @default("SALES")
+  phone       String?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  sales       Sale[]
+  purchases   Purchase[]
+  expenses    Expense[]
+  returns     SaleReturn[]
+}
+
+model Shop {
+  id        String  @id @default(cuid())
+  name      String  @default("Srihari Silvers")
+  address   String  @default("Ammapet Main Road")
+  city      String  @default("Salem")
+  state     String  @default("Tamil Nadu")
+  pincode   String  @default("636001")
+  phone     String  @default("9952797597")
+  email     String  @default("")
+  gstin     String  @default("")
+  logo      String?
+  bankName  String  @default("")
+  bankAcc   String  @default("")
+  bankIfsc  String  @default("")
+  upiId     String  @default("")
+}
+
+model SilverRate {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  rate999   Float
+  rate925   Float
+  rate916   Float
+  rate875   Float
+  rate800   Float
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  products    Product[]
+}
+
+model Product {
+  id                String         @id @default(cuid())
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id])
+  name              String
+  description       String?
+  hsnCode           String         @default("71131100")
+  purity            String         @default("999")
+  grossWeight       Float          @default(0)
+  netWeight         Float          @default(0)
+  stoneWeight       Float          @default(0)
+  makingChargeType  String         @default("PER_GRAM")
+  makingChargeValue Float          @default(0)
+  wastagePercent    Float          @default(0)
+  barcode           String?        @unique
+  currentStock      Float          @default(0)
+  faultyStock       Float          @default(0)
+  minStock          Float          @default(1)
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  saleItems         SaleItem[]
+  purchaseItems     PurchaseItem[]
+}
+
+model Customer {
+  id             String              @id @default(cuid())
+  name           String
+  phone          String              @unique
+  email          String?
+  address        String?
+  city           String?
+  gstin          String?
+  loyaltyPoints  Int                 @default(0)
+  creditBalance  Float               @default(0)
+  totalPurchases Float               @default(0)
+  totalVisits    Int                 @default(0)
+  birthday       DateTime?
+  anniversary    DateTime?
+  notes          String?
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  sales          Sale[]
+  oldSilver      OldSilverPurchase[]
+}
+
+model Supplier {
+  id          String     @id @default(cuid())
+  name        String
+  phone       String
+  email       String?
+  address     String?
+  city        String?
+  gstin       String?
+  balance     Float      @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  purchases   Purchase[]
+}
+
+model Sale {
+  id                  String     @id @default(cuid())
+  billNumber          String     @unique
+  customerId          String?
+  customer            Customer?  @relation(fields: [customerId], references: [id])
+  saleDate            DateTime   @default(now())
+  silverRate          Float
+  silverPurity        String     @default("999")
+  subtotal            Float
+  makingCharges       Float      @default(0)
+  wastageAmount       Float      @default(0)
+  gstPercent          Float      @default(3)
+  gstAmount           Float      @default(0)
+  discount            Float      @default(0)
+  oldSilverDeduction  Float      @default(0)
+  oldSilverWeight     Float      @default(0)
+  oldSilverRate       Float      @default(0)
+  oldSilverPurity     String     @default("999")
+  roundOff            Float      @default(0)
+  total               Float
+  paymentMode         String     @default("CASH")
+  cashAmount          Float      @default(0)
+  cardAmount          Float      @default(0)
+  upiAmount           Float      @default(0)
+  chequeAmount        Float      @default(0)
+  amountPaid          Float
+  change              Float      @default(0)
+  notes               String?
+  status              String       @default("COMPLETED")
+  createdById         String
+  createdBy           User         @relation(fields: [createdById], references: [id])
+  items               SaleItem[]
+  returns             SaleReturn[]
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+}
+
+model SaleItem {
+  id                String   @id @default(cuid())
+  saleId            String
+  sale              Sale     @relation(fields: [saleId], references: [id])
+  productId         String?
+  product           Product? @relation(fields: [productId], references: [id])
+  itemName          String
+  hsnCode           String   @default("71131100")
+  grossWeight       Float
+  stoneWeight       Float    @default(0)
+  netWeight         Float
+  purity            String   @default("999")
+  quantity          Int      @default(1)
+  silverRate        Float
+  makingChargeType  String   @default("PER_GRAM")
+  makingChargeValue Float    @default(0)
+  wastagePercent    Float    @default(0)
+  wastageWeight     Float    @default(0)
+  silverValue       Float
+  makingAmount      Float          @default(0)
+  gstAmount         Float          @default(0)
+  itemTotal         Float
+  returnItems       SaleReturnItem[]
+}
+
+model Purchase {
+  id              String         @id @default(cuid())
+  purchaseNumber  String         @unique
+  supplierId      String?
+  supplier        Supplier?      @relation(fields: [supplierId], references: [id])
+  purchaseDate    DateTime       @default(now())
+  silverRate      Float
+  silverPurity    String         @default("999")
+  subtotal        Float
+  gstPercent      Float          @default(3)
+  gstAmount       Float          @default(0)
+  total           Float
+  paymentMode     String         @default("CASH")
+  amountPaid      Float
+  notes           String?
+  status          String         @default("COMPLETED")
+  createdById     String
+  createdBy       User           @relation(fields: [createdById], references: [id])
+  items           PurchaseItem[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model PurchaseItem {
+  id          String   @id @default(cuid())
+  purchaseId  String
+  purchase    Purchase @relation(fields: [purchaseId], references: [id])
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  itemName    String
+  grossWeight Float
+  netWeight   Float
+  purity      String   @default("999")
+  quantity    Int      @default(1)
+  silverRate  Float
+  itemTotal   Float
+}
+
+model OldSilverPurchase {
+  id          String    @id @default(cuid())
+  billNumber  String    @unique
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  date        DateTime  @default(now())
+  silverRate  Float
+  purity      String    @default("999")
+  grossWeight Float
+  netWeight   Float
+  deductions  Float     @default(0)
+  totalAmount Float
+  paymentMode String    @default("CASH")
+  notes       String?
+  createdAt   DateTime  @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  amount      Float
+  date        DateTime @default(now())
+  paymentMode String   @default("CASH")
+  notes       String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model SaleReturn {
+  id             String           @id @default(cuid())
+  returnNumber   String           @unique
+  saleId         String
+  sale           Sale             @relation(fields: [saleId], references: [id])
+  returnDate     DateTime         @default(now())
+  reason         String
+  refundAmount   Float
+  refundMode     String           @default("CASH")
+  notes          String?
+  status         String           @default("COMPLETED")
+  createdById    String
+  createdBy      User             @relation(fields: [createdById], references: [id])
+  items          SaleReturnItem[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model SaleReturnItem {
+  id           String     @id @default(cuid())
+  returnId     String
+  return       SaleReturn @relation(fields: [returnId], references: [id])
+  saleItemId   String
+  saleItem     SaleItem   @relation(fields: [saleItemId], references: [id])
+  itemName     String
+  quantity     Int        @default(1)
+  netWeight    Float
+  refundAmount Float
+  restocked    Boolean    @default(true)
+  faulty       Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+}

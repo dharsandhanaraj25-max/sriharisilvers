@@ -18,6 +18,7 @@ interface EstimateItem {
   makingAmount: number;
   gstAmount: number;
   itemTotal: number;
+  isFixedPrice?: boolean;
 }
 
 interface EstimateSlipViewProps {
@@ -153,20 +154,28 @@ export function EstimateSlipView({
                   {item.itemName}
                   {item.quantity > 1 && <span className="text-slate-400 ml-1">×{item.quantity}</span>}
                 </td>
-                <td className="px-2 py-1.5 text-center">{PURITY_LABEL[item.purity] || item.purity}</td>
-                <td className="px-2 py-1.5 text-right">{item.grossWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right">{item.stoneWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right font-medium">{item.netWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right">₹{item.silverRate.toFixed(2)}</td>
-                <td className="px-2 py-1.5 text-right">
-                  {item.makingChargeValue > 0
-                    ? item.makingChargeType === "PER_GRAM"
-                      ? `₹${item.makingChargeValue}/g`
-                      : item.makingChargeType === "PERCENT"
-                      ? `${item.makingChargeValue}%`
-                      : `₹${item.makingChargeValue}`
-                    : "—"}
-                </td>
+                {item.isFixedPrice ? (
+                  <td colSpan={6} className="px-2 py-1.5 text-center text-slate-400 italic">
+                    Total Price
+                  </td>
+                ) : (
+                  <>
+                    <td className="px-2 py-1.5 text-center">{PURITY_LABEL[item.purity] || item.purity}</td>
+                    <td className="px-2 py-1.5 text-right">{item.grossWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right">{item.stoneWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{item.netWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right">₹{item.silverRate.toFixed(2)}</td>
+                    <td className="px-2 py-1.5 text-right">
+                      {item.makingChargeValue > 0
+                        ? item.makingChargeType === "PER_GRAM"
+                          ? `₹${item.makingChargeValue}/g`
+                          : item.makingChargeType === "PERCENT"
+                          ? `${item.makingChargeValue}%`
+                          : `₹${item.makingChargeValue}`
+                        : "—"}
+                    </td>
+                  </>
+                )}
                 <td className="px-2 py-1.5 text-right font-semibold">{formatCurrency(item.itemTotal)}</td>
               </tr>
             ))}

@@ -140,17 +140,34 @@ const navItems: NavItem[] = [
   },
 ];
 
+function getActiveHref(pathname: string, items: NavItem[]): string | null {
+  // Longest-prefix match wins, so a more specific route (e.g. /billing/new)
+  // takes priority over a shorter parent route (e.g. /billing) that would
+  // otherwise also match via startsWith.
+  let best: string | null = null;
+  for (const item of items) {
+    const matches = pathname === item.href || pathname.startsWith(item.href + "/");
+    if (matches && (!best || item.href.length > best.length)) {
+      best = item.href;
+    }
+  }
+  return best;
+}
+
 interface SidebarProps {
   role: string;
   open?: boolean;
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ role, open = false, onClose }: SidebarProps) {
+export function Sidebar({ role, open = false, onClose, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const isAdmin = role === "ADMIN";
 
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
+  const activeHref = getActiveHref(pathname, visibleItems);
 
   return (
     <>
@@ -162,22 +179,23 @@ export function Sidebar({ role, open = false, onClose }: SidebarProps) {
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white flex flex-col h-full shadow-xl transition-transform duration-200 ease-in-out
+        className={`fixed inset-y-0 left-0 z-40 bg-slate-900 text-white flex flex-col h-full shadow-xl transition-[transform,width] duration-200 ease-in-out
           lg:static lg:translate-x-0 print:hidden
+          ${collapsed ? "lg:w-16" : "lg:w-64"} w-64
           ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
       {/* Logo */}
-      <div className="p-6 border-b border-slate-700 flex items-center justify-between">
+      <div className={cn("p-6 border-b border-slate-700 flex items-center", collapsed ? "lg:justify-center lg:px-3" : "justify-between")}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg">
+          <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg">
             S
           </div>
-          <div>
+          <div className={collapsed ? "lg:hidden" : ""}>
             <h1 className="font-bold text-white text-sm leading-tight">Srihari Silvers</h1>
             <p className="text-slate-400 text-xs">Salem, TN</p>
           </div>
         </div>
-        <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white p-1">
+        <button onClick={onClose} className={cn("lg:hidden text-slate-400 hover:text-white p-1", collapsed ? "hidden" : "")}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -185,7 +203,7 @@ export function Sidebar({ role, open = false, onClose }: SidebarProps) {
       </div>
 
       {/* Role Badge */}
-      <div className="px-6 py-3 border-b border-slate-700">
+      <div className={cn("px-6 py-3 border-b border-slate-700", collapsed ? "lg:hidden" : "")}>
         <span className={cn(
           "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold",
           isAdmin
@@ -200,22 +218,23 @@ export function Sidebar({ role, open = false, onClose }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         <ul className="space-y-1">
           {visibleItems.map((item) => {
-            const isActive = pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+            const isActive = item.href === activeHref;
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={onClose}
+                  title={collapsed ? item.label : undefined}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                    collapsed ? "lg:justify-center" : "",
                     isActive
                       ? "bg-burgundy-500 text-white shadow-sm"
                       : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   )}
                 >
                   {item.icon}
-                  {item.label}
+                  <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
                 </Link>
               </li>
             );
@@ -223,8 +242,20 @@ export function Sidebar({ role, open = false, onClose }: SidebarProps) {
         </ul>
       </nav>
 
+      {/* Collapse toggle (desktop only) */}
+      <button
+        onClick={onToggleCollapse}
+        className="hidden lg:flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 py-2.5 border-t border-slate-700 text-xs font-medium"
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <svg className={`w-4 h-4 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+        {!collapsed && <span>Collapse</span>}
+      </button>
+
       {/* Footer */}
-      <div className="p-4 border-t border-slate-700">
+      <div className={cn("p-4 border-t border-slate-700", collapsed ? "lg:hidden" : "")}>
         <p className="text-xs text-slate-500 text-center">Ph: 9952797597</p>
         <p className="text-xs text-slate-600 text-center mt-1">v1.0 &bull; GST Compliant</p>
       </div>

@@ -257,13 +257,24 @@ export function BillingForm({
   // Barcode scanner
   const [barcodeInput, setBarcodeInput] = useState("");
   const [barcodeStatus, setBarcodeStatus] = useState<"idle" | "scanning" | "found" | "notfound">("idle");
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    barcodeInputRef.current?.focus();
+  }, []);
 
   async function handleBarcodeScan(code: string) {
     if (!code.trim()) return;
     setBarcodeStatus("scanning");
     try {
       const res = await fetch(`/api/products/lookup?barcode=${encodeURIComponent(code.trim())}`);
-      if (!res.ok) { setBarcodeStatus("notfound"); setTimeout(() => setBarcodeStatus("idle"), 2000); return; }
+      if (!res.ok) {
+        setBarcodeStatus("notfound");
+        setBarcodeInput("");
+        barcodeInputRef.current?.focus();
+        setTimeout(() => setBarcodeStatus("idle"), 2000);
+        return;
+      }
       const product: Product = await res.json();
       // Add as new item with product data pre-filled
       markDirty();
@@ -300,9 +311,12 @@ export function BillingForm({
       });
       setBarcodeStatus("found");
       setBarcodeInput("");
+      barcodeInputRef.current?.focus();
       setTimeout(() => setBarcodeStatus("idle"), 1500);
     } catch {
       setBarcodeStatus("notfound");
+      setBarcodeInput("");
+      barcodeInputRef.current?.focus();
       setTimeout(() => setBarcodeStatus("idle"), 2000);
     }
   }
@@ -518,31 +532,35 @@ export function BillingForm({
             <span className="text-burgundy-700">925: ₹{latestRate.rate925}</span>
             <span className="text-burgundy-700">916: ₹{latestRate.rate916}</span>
           </div>
-          <div className="flex items-center gap-3 text-xs text-slate-600">
+          <div className="flex items-center gap-3 text-sm text-slate-600">
             <span className="font-medium">CGST:</span>
-            <input
-              type="number"
-              value={cgstPercent}
-              onChange={(e) => { setCgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0); markDirty(); }}
-              step="0.5"
-              min="0"
-              max="14"
-              className="w-16 px-2 py-1 border border-slate-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-burgundy-500"
-              placeholder="1.5"
-            />
-            <span>%</span>
+            <div className="relative">
+              <input
+                type="number"
+                value={cgstPercent}
+                onChange={(e) => { setCgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0); markDirty(); }}
+                step="0.5"
+                min="0"
+                max="14"
+                className="w-24 pl-3 pr-7 py-2.5 border border-slate-300 rounded-lg text-base text-center font-semibold focus:outline-none focus:ring-2 focus:ring-burgundy-500"
+                placeholder="1.5"
+              />
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">%</span>
+            </div>
             <span className="font-medium ml-2">SGST:</span>
-            <input
-              type="number"
-              value={sgstPercent}
-              onChange={(e) => { setSgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0); markDirty(); }}
-              step="0.5"
-              min="0"
-              max="14"
-              className="w-16 px-2 py-1 border border-slate-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-burgundy-500"
-              placeholder="1.5"
-            />
-            <span>%</span>
+            <div className="relative">
+              <input
+                type="number"
+                value={sgstPercent}
+                onChange={(e) => { setSgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0); markDirty(); }}
+                step="0.5"
+                min="0"
+                max="14"
+                className="w-24 pl-3 pr-7 py-2.5 border border-slate-300 rounded-lg text-base text-center font-semibold focus:outline-none focus:ring-2 focus:ring-burgundy-500"
+                placeholder="1.5"
+              />
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">%</span>
+            </div>
             <span className="ml-2 text-slate-500">Total GST: {gstPercent}%</span>
           </div>
         </div>
@@ -668,11 +686,12 @@ export function BillingForm({
           <span className="text-sm font-medium text-slate-600 whitespace-nowrap">Scan Barcode</span>
         </div>
         <input
+          ref={barcodeInputRef}
           type="text"
           value={barcodeInput}
           onChange={(e) => setBarcodeInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleBarcodeScan(barcodeInput); } }}
-          placeholder="Scan or type barcode, then press Enter..."
+          placeholder="Click here, then scan with your barcode gun (or type the code) and press Enter"
           className="flex-1 text-sm bg-transparent outline-none placeholder-slate-400 text-slate-800"
         />
         {barcodeStatus === "scanning" && <span className="text-xs text-blue-600 font-medium">Searching...</span>}
@@ -704,14 +723,14 @@ export function BillingForm({
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-8">#</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 min-w-56">Item / Product</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-32">Purity</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Gross Weight (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Stone Weight (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Wastage %</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 min-w-60">Item / Product</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-36">Purity</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-32">Gross Weight (g)</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-32">Stone Weight (g)</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Wastage %</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Net Weight (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Rate (₹/g)</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-32">Making Charge</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Rate (₹/g)</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-36">Making Charge</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Silver Value</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Making Amt</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-20">GST</th>
@@ -782,7 +801,7 @@ export function BillingForm({
                         <select
                           value={item.purity}
                           onChange={(e) => updateItem(item.id, { purity: e.target.value })}
-                          className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-burgundy-400"
+                          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-burgundy-400"
                         >
                           {Object.entries(PURITY_LABELS).map(([k, v]) => (
                             <option key={k} value={k}>{v}</option>
@@ -791,20 +810,20 @@ export function BillingForm({
                       </td>
                       <td className="px-3 py-3">
                         <input type="number" value={item.grossWeight || ""} onChange={(e) => updateItem(item.id, { grossWeight: parseFloat(e.target.value) || 0 })}
-                          step="0.001" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                          step="0.001" min="0" className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                       </td>
                       <td className="px-3 py-3">
                         <input type="number" value={item.stoneWeight || ""} onChange={(e) => updateItem(item.id, { stoneWeight: parseFloat(e.target.value) || 0 })}
-                          step="0.001" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                          step="0.001" min="0" className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                       </td>
                       <td className="px-3 py-3">
                         <input type="number" value={item.wastagePercent || ""} onChange={(e) => updateItem(item.id, { wastagePercent: parseFloat(e.target.value) || 0 })}
-                          step="0.1" min="0" max="20" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                          step="0.1" min="0" max="20" className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                       </td>
-                      <td className="px-3 py-3 text-right text-xs text-slate-600 font-medium pt-4">{item.netWeight.toFixed(3)}</td>
+                      <td className="px-3 py-3 text-right text-sm text-slate-600 font-medium pt-4">{item.netWeight.toFixed(3)}</td>
                       <td className="px-3 py-3">
                         <input type="number" value={item.silverRate || ""} onChange={(e) => updateItem(item.id, { silverRate: parseFloat(e.target.value) || 0 })}
-                          step="0.01" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                          step="0.01" min="0" className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                       </td>
                       <td className="px-3 py-3">
                         <div className="space-y-1.5">
@@ -812,21 +831,29 @@ export function BillingForm({
                             {[{ v: "PER_GRAM", l: "₹/g" }, { v: "PERCENT", l: "%" }, { v: "FIXED", l: "Flat" }].map(({ v, l }) => (
                               <button key={v} type="button"
                                 onClick={() => updateItem(item.id, { makingChargeType: v })}
-                                className={`px-2 py-1 font-medium transition-colors ${item.makingChargeType === v ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+                                className={`px-2.5 py-1.5 font-medium transition-colors ${item.makingChargeType === v ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
                                 {l}
                               </button>
                             ))}
                           </div>
                           <input type="number" value={item.makingChargeValue || ""} onChange={(e) => updateItem(item.id, { makingChargeValue: parseFloat(e.target.value) || 0 })}
                             step="0.5" min="0" placeholder="0"
-                            className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
                         </div>
                       </td>
                     </>
                   )}
-                  <td className="px-3 py-3 text-right text-xs text-slate-700 font-medium pt-4">{formatCurrency(item.silverValue)}</td>
-                  <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.makingAmount)}</td>
-                  <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.gstAmount)}</td>
+                  {item.isFixedPrice ? (
+                    <td colSpan={3} className="px-3 py-3 text-center text-xs text-slate-400 italic pt-4">
+                      GST included in total
+                    </td>
+                  ) : (
+                    <>
+                      <td className="px-3 py-3 text-right text-xs text-slate-700 font-medium pt-4">{formatCurrency(item.silverValue)}</td>
+                      <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.makingAmount)}</td>
+                      <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.gstAmount)}</td>
+                    </>
+                  )}
                   <td className="px-3 py-3 text-right text-sm font-bold text-slate-800 pt-4">{formatCurrency(item.itemTotal)}</td>
                   <td className="px-3 py-3 pt-4">
                     {items.length > 1 && (

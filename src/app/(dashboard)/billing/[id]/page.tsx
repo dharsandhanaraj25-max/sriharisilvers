@@ -83,7 +83,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
         <BillPrintView
           billNumber={sale.billNumber}
           customer={sale.customer ? { name: sale.customer.name, phone: sale.customer.phone } : null}
-          items={sale.items}
+          items={sale.items.map((i) => ({ ...i, isFixedPrice: i.makingChargeType === "FIXED" }))}
           subtotal={sale.subtotal}
           totalMaking={sale.makingCharges}
           totalWastage={sale.wastageAmount}

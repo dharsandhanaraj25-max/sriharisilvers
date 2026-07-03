@@ -21,6 +21,7 @@ interface BillPrintViewProps {
     makingAmount: number;
     gstAmount: number;
     itemTotal: number;
+    isFixedPrice?: boolean;
   }[];
   subtotal: number;
   totalMaking: number;
@@ -158,21 +159,29 @@ export function BillPrintView({
               <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
                 <td className="px-2 py-1.5 text-center">{i + 1}</td>
                 <td className="px-2 py-1.5 font-medium">{item.itemName}</td>
-                <td className="px-2 py-1.5 text-center text-slate-500">{item.hsnCode}</td>
-                <td className="px-2 py-1.5 text-center">{item.purity}</td>
-                <td className="px-2 py-1.5 text-right">{item.grossWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right">{item.stoneWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right font-medium">{item.netWeight.toFixed(3)}g</td>
-                <td className="px-2 py-1.5 text-right">₹{item.silverRate.toFixed(2)}</td>
-                <td className="px-2 py-1.5 text-right">
-                  {item.makingChargeValue > 0
-                    ? item.makingChargeType === "PER_GRAM"
-                      ? `₹${item.makingChargeValue}/g`
-                      : item.makingChargeType === "PERCENT"
-                      ? `${item.makingChargeValue}%`
-                      : `₹${item.makingChargeValue}`
-                    : "—"}
-                </td>
+                {item.isFixedPrice ? (
+                  <td colSpan={7} className="px-2 py-1.5 text-center text-slate-400 italic">
+                    Total Price
+                  </td>
+                ) : (
+                  <>
+                    <td className="px-2 py-1.5 text-center text-slate-500">{item.hsnCode}</td>
+                    <td className="px-2 py-1.5 text-center">{item.purity}</td>
+                    <td className="px-2 py-1.5 text-right">{item.grossWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right">{item.stoneWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{item.netWeight.toFixed(3)}g</td>
+                    <td className="px-2 py-1.5 text-right">₹{item.silverRate.toFixed(2)}</td>
+                    <td className="px-2 py-1.5 text-right">
+                      {item.makingChargeValue > 0
+                        ? item.makingChargeType === "PER_GRAM"
+                          ? `₹${item.makingChargeValue}/g`
+                          : item.makingChargeType === "PERCENT"
+                          ? `${item.makingChargeValue}%`
+                          : `₹${item.makingChargeValue}`
+                        : "—"}
+                    </td>
+                  </>
+                )}
                 <td className="px-2 py-1.5 text-right font-semibold">{formatCurrency(item.itemTotal)}</td>
               </tr>
             ))}

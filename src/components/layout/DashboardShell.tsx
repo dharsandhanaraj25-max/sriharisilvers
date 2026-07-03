@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { WelcomeMarquee } from "./WelcomeMarquee";
@@ -20,12 +20,34 @@ interface DashboardShellProps {
   children: React.ReactNode;
 }
 
+const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
+
 export function DashboardShell({ role, user, rates, children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    if (stored === "true") setSidebarCollapsed(true);
+  }, []);
+
+  const toggleCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <Sidebar role={role} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        role={role}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleCollapse}
+      />
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
         <WelcomeMarquee />
         <TopBar user={user} rates={rates} onMenuClick={() => setSidebarOpen(true)} />

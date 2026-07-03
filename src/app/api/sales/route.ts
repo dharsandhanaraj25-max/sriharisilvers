@@ -60,14 +60,35 @@ export async function POST(request: Request) {
   const user = session.user as { id: string };
   const body = await request.json();
 
+  if (!body.customerId && !body.newCustomer) {
+    return NextResponse.json({ error: "Customer is required" }, { status: 400 });
+  }
+  if (body.newCustomer) {
+    const existing = await prisma.customer.findUnique({ where: { phone: body.newCustomer.phone } });
+    if (existing) {
+      return NextResponse.json(
+        { error: `Phone ${body.newCustomer.phone} is already registered as "${existing.name}". Please search and select them instead.` },
+        { status: 409 }
+      );
+    }
+  }
+
   const count = await prisma.sale.count();
   const billNumber = `SHS${new Date().getFullYear().toString().slice(-2)}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(count + 1).padStart(4, "0")}`;
 
   const sale = await prisma.$transaction(async (tx) => {
+    let customerId = body.customerId || null;
+    if (body.newCustomer) {
+      const created = await tx.customer.create({
+        data: { name: body.newCustomer.name, phone: body.newCustomer.phone },
+      });
+      customerId = created.id;
+    }
+
     const newSale = await tx.sale.create({
       data: {
         billNumber,
-        customerId: body.customerId || null,
+        customerId,
         saleDate: new Date(),
         silverRate: body.silverRate,
         silverPurity: body.silverPurity || "999",
@@ -119,9 +140,9 @@ export async function POST(request: Request) {
     });
 
     // Update customer totals
-    if (body.customerId) {
+    if (customerId) {
       await tx.customer.update({
-        where: { id: body.customerId },
+        where: { id: customerId },
         data: {
           totalPurchases: { increment: body.total },
           totalVisits: { increment: 1 },

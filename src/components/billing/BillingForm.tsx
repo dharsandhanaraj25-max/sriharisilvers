@@ -61,7 +61,7 @@ interface BillingItem {
 }
 
 interface Customer {
-  id: string;
+  id: string | null;
   name: string;
   phone: string;
 }
@@ -364,23 +364,17 @@ export function BillingForm({
     setDuplicateWarning("");
   }
 
-  async function addNewCustomer() {
-    if (!newCustomerName.trim() || !newCustomerPhone.trim()) return;
-    const res = await fetch("/api/customers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCustomerName.trim(), phone: newCustomerPhone.trim() }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setCustomer({ id: data.id, name: data.name, phone: data.phone });
-      setShowAddCustomer(false);
-      setNewCustomerName("");
-      setNewCustomerPhone("");
-      setDuplicateWarning("");
-    } else {
-      alert(data.error || "Failed to add customer");
-    }
+  function addNewCustomer() {
+    if (!newCustomerName.trim() || newCustomerPhone.trim().length !== 10) return;
+    // Not saved to the database yet — held in the bill draft and only created
+    // when the bill itself is confirmed & saved, so canceling the bill doesn't
+    // leave behind an orphaned customer record.
+    setCustomer({ id: null, name: newCustomerName.trim(), phone: newCustomerPhone.trim() });
+    setShowAddCustomer(false);
+    setNewCustomerName("");
+    setNewCustomerPhone("");
+    setDuplicateWarning("");
+    markDirty();
   }
 
   async function handleSave() {
@@ -397,7 +391,8 @@ export function BillingForm({
     setSaving(true);
     try {
       const body = {
-        customerId: customer.id,
+        customerId: customer.id || undefined,
+        newCustomer: customer.id ? undefined : { name: customer.name, phone: customer.phone },
         silverRate: latestRate?.rate999 || 0,
         silverPurity: "999",
         subtotal,
@@ -577,7 +572,14 @@ export function BillingForm({
         {customer ? (
           <div className="flex items-center justify-between bg-burgundy-50 border border-burgundy-200 rounded-lg px-4 py-3">
             <div>
-              <p className="font-semibold text-slate-800">{customer.name}</p>
+              <p className="font-semibold text-slate-800 flex items-center gap-2">
+                {customer.name}
+                {!customer.id && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                    New — saved with bill
+                  </span>
+                )}
+              </p>
               <p className="text-sm text-slate-500">{customer.phone}</p>
             </div>
             <button onClick={() => setCustomer(null)} className="text-red-500 hover:text-red-700 text-sm font-medium">
@@ -663,7 +665,7 @@ export function BillingForm({
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={addNewCustomer} className="bg-burgundy-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-burgundy-600">Save Customer</button>
+                  <button onClick={addNewCustomer} className="bg-burgundy-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-burgundy-600">Use This Customer</button>
                   <button onClick={() => { setShowAddCustomer(false); setDuplicateWarning(""); }} className="border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
                 </div>
               </div>

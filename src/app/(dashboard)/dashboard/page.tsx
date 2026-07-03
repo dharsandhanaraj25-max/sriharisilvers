@@ -101,17 +101,17 @@ export default async function DashboardPage() {
 
       {/* Silver Rate Banner */}
       {latestRate && (
-        <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl p-4 flex items-center justify-between text-white shadow-md">
+        <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-white shadow-md">
           <div>
             <p className="text-amber-100 text-sm font-medium">Today's Silver Rate</p>
-            <div className="flex items-center gap-6 mt-1">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-1">
               <span className="text-lg font-bold">999: ₹{latestRate.rate999}/g</span>
               <span className="text-base">925: ₹{latestRate.rate925}/g</span>
               <span className="text-base">916: ₹{latestRate.rate916}/g</span>
             </div>
           </div>
           {isAdmin && (
-            <Link href="/rates" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+            <Link href="/rates" className="self-start sm:self-auto bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
               Update Rate
             </Link>
           )}

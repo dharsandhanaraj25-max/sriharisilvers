@@ -105,13 +105,13 @@ export default function ExpensesPage() {
       )}
 
       {/* Date Filter + Total */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-wrap items-center gap-3">
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
           className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
         <span className="text-slate-400">to</span>
         <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
           className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
-        <div className="ml-auto bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+        <div className="w-full sm:w-auto sm:ml-auto bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
           <p className="text-xs text-amber-600">Total Expenses</p>
           <p className="font-bold text-amber-800">{formatCurrency(totalAmount)}</p>
         </div>

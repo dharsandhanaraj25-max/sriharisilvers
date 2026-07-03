@@ -60,7 +60,7 @@ export default function ReportsPage() {
 
       {/* Date Range */}
       {activeTab !== "stock" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-wrap items-center gap-3">
           <span className="text-sm text-slate-600 font-medium">Period:</span>
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
             className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400" />
@@ -68,7 +68,7 @@ export default function ReportsPage() {
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
             className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400" />
           <button onClick={() => window.print()}
-            className="ml-auto flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700">
+            className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>

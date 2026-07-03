@@ -457,9 +457,9 @@ export function BillingForm({
     return (
       <div>
         <div className="print:hidden">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 flex items-center justify-between">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -469,7 +469,7 @@ export function BillingForm({
                 <p className="text-sm text-green-600">Bill No: <strong>{saved.billNumber}</strong> | Total: <strong>{formatCurrency(total)}</strong></p>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button onClick={() => window.print()} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -520,14 +520,14 @@ export function BillingForm({
     <div className="space-y-5">
       {/* Silver Rate Banner */}
       {latestRate && (
-        <div className="bg-burgundy-50 border border-burgundy-200 rounded-xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm">
+        <div className="bg-burgundy-50 border border-burgundy-200 rounded-xl px-4 py-3 flex flex-wrap items-center gap-y-3 gap-x-4 justify-between">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <span className="font-semibold text-burgundy-800">Today&apos;s Rates (per gram):</span>
             <span className="text-burgundy-700">999: ₹{latestRate.rate999}</span>
             <span className="text-burgundy-700">925: ₹{latestRate.rate925}</span>
             <span className="text-burgundy-700">916: ₹{latestRate.rate916}</span>
           </div>
-          <div className="flex items-center gap-3 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-sm text-slate-600">
             <span className="font-medium">CGST:</span>
             <div className="relative">
               <input
@@ -700,7 +700,7 @@ export function BillingForm({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
           </svg>
-          <span className="text-sm font-medium text-slate-600 whitespace-nowrap">Scan Barcode</span>
+          <span className="hidden sm:inline text-sm font-medium text-slate-600 whitespace-nowrap">Scan Barcode</span>
         </div>
         <input
           ref={barcodeInputRef}
@@ -1027,7 +1027,7 @@ export function BillingForm({
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-slate-600 mb-2">Payment Mode</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {PAYMENT_MODES.map((mode) => (
                   <button key={mode.value} onClick={() => setPaymentMode(mode.value)}
                     className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${

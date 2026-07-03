@@ -190,7 +190,7 @@ export function BillPrintView({
       </div>
 
       {/* Totals */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
         {/* Weight Summary */}
         <div className="flex-1 bg-slate-50 border border-slate-200 rounded p-3">
           <p className="font-semibold text-slate-700 mb-2 text-xs">Weight Summary</p>
@@ -211,7 +211,7 @@ export function BillPrintView({
         </div>
 
         {/* Amount Summary */}
-        <div className="w-64 space-y-1 text-xs">
+        <div className="w-full sm:w-64 space-y-1 text-xs">
           <div className="flex justify-between py-1">
             <span className="text-slate-500">Silver Value</span>
             <span>{formatCurrency(items.reduce((s, i) => s + i.silverValue, 0))}</span>

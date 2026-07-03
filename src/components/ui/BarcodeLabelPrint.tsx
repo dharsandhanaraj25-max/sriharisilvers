@@ -39,7 +39,7 @@ export function BarcodeLabelPrint({ product, onClose }: BarcodeLabelPrintProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 print:bg-transparent print:inset-auto print:fixed-none">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-96 print:shadow-none print:p-0 print:rounded-none print:w-auto">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4 print:shadow-none print:p-0 print:rounded-none print:w-auto print:mx-0">
         {/* Screen controls */}
         <div className="flex items-center justify-between mb-4 print:hidden">
           <h3 className="font-semibold text-slate-800">Print Barcode Label</h3>

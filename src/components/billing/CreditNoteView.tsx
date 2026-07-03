@@ -115,7 +115,7 @@ export function CreditNoteView({
 
       {/* Totals */}
       <div className="border-t-2 border-slate-800 pt-3 flex justify-end">
-        <div className="space-y-1 text-xs min-w-[220px]">
+        <div className="space-y-1 text-xs w-full max-w-[220px]">
           <div className="flex justify-between font-bold text-base border-t border-slate-300 pt-1 mt-1">
             <span>Total Refund</span>
             <span className="text-red-700">{formatCurrency(refundAmount)}</span>

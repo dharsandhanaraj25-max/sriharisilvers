@@ -159,7 +159,7 @@ export function ReturnDialog({ saleId, billNumber, items, total, onSuccess, onCl
                         </p>
 
                         {s.selected && (
-                          <div className="mt-2 flex items-center gap-4">
+                          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
                             <div className="flex items-center gap-2">
                               <label className="text-xs text-slate-600">Return Qty:</label>
                               <input
@@ -192,7 +192,7 @@ export function ReturnDialog({ saleId, billNumber, items, total, onSuccess, onCl
                                 Mark as Faulty
                               </label>
                             )}
-                            <span className="text-xs font-semibold text-green-700 ml-auto">
+                            <span className="w-full sm:w-auto sm:ml-auto text-xs font-semibold text-green-700 text-right">
                               Refund: {formatCurrency(getRefundForItem(item, s.qty))}
                             </span>
                           </div>
@@ -265,7 +265,7 @@ export function ReturnDialog({ saleId, billNumber, items, total, onSuccess, onCl
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl flex items-center justify-between gap-4">
+        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             {selectedList.length > 0 && (
               <p className="text-sm text-slate-600">

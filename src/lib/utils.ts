@@ -50,11 +50,6 @@ export const PURITY_LABELS: Record<string, string> = {
   "800": "800",
 };
 
-export const GST_RATES = {
-  silver: 3,       // GST on silver jewellery (HSN 7113)
-  makingCharges: 5, // GST on making charges
-};
-
 export const HSN_CODES = {
   silverJewellery: "71131100",
   silverBars: "71061000",

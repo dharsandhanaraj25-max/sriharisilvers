@@ -13,30 +13,23 @@ interface QuickCalculatorProps {
   } | null;
 }
 
-const PURITIES = [
-  { key: "999", label: "999 — Fine Silver", rateKey: "rate999" as const },
-  { key: "925", label: "925 — Sterling", rateKey: "rate925" as const },
-  { key: "916", label: "916", rateKey: "rate916" as const },
-  { key: "875", label: "875", rateKey: "rate875" as const },
-  { key: "800", label: "800", rateKey: "rate800" as const },
-];
-
 export function QuickCalculator({ rates }: QuickCalculatorProps) {
   const [open, setOpen] = useState(false);
   const [weight, setWeight] = useState<number | "">("");
-  const [purity, setPurity] = useState("999");
   const [makingPer, setMakingPer] = useState<number | "">("");
   const [qty, setQty] = useState(1);
+  const [cgstPercent, setCgstPercent] = useState<number | "">(1.5);
+  const [sgstPercent, setSgstPercent] = useState<number | "">(1.5);
 
-  const selectedPurity = PURITIES.find((p) => p.key === purity)!;
-  const ratePerGram = rates ? rates[selectedPurity.rateKey] : 0;
+  const ratePerGram = rates ? rates.rate999 : 0;
+  const gstPercent = (cgstPercent || 0) + (sgstPercent || 0);
   const netWeight = (weight || 0) * qty;
   const silverValue = netWeight * ratePerGram;
   const makingValue = (makingPer || 0) * netWeight;
-  const gst = (silverValue + makingValue) * 0.03;
+  const gst = (silverValue + makingValue) * (gstPercent / 100);
   const total = silverValue + makingValue + gst;
 
-  const reset = () => { setWeight(""); setPurity("999"); setMakingPer(""); setQty(1); };
+  const reset = () => { setWeight(""); setMakingPer(""); setQty(1); setCgstPercent(1.5); setSgstPercent(1.5); };
 
   return (
     <>
@@ -71,27 +64,9 @@ export function QuickCalculator({ rates }: QuickCalculatorProps) {
 
             <div className="p-5 space-y-4">
               {/* Rate display */}
-              {rates && (
-                <div className="grid grid-cols-3 gap-2 bg-burgundy-50 rounded-xl p-3">
-                  {PURITIES.slice(0, 3).map((p) => (
-                    <button key={p.key} onClick={() => setPurity(p.key)}
-                      className={`text-center p-1.5 rounded-lg transition-colors ${purity === p.key ? "bg-burgundy-500 text-white" : "hover:bg-burgundy-100"}`}>
-                      <div className={`text-xs font-bold ${purity === p.key ? "text-white" : "text-burgundy-700"}`}>{p.key}</div>
-                      <div className={`text-xs ${purity === p.key ? "text-burgundy-100" : "text-slate-500"}`}>₹{rates[p.rateKey]}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Purity full select */}
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Purity</label>
-                <select value={purity} onChange={(e) => setPurity(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400">
-                  {PURITIES.map((p) => (
-                    <option key={p.key} value={p.key}>{p.label} — ₹{rates ? rates[p.rateKey] : 0}/g</option>
-                  ))}
-                </select>
+              <div className="bg-burgundy-50 rounded-xl p-3 text-center">
+                <div className="text-xs text-burgundy-600 font-medium">Today&apos;s Silver Rate</div>
+                <div className="text-2xl font-bold text-burgundy-700">₹{ratePerGram}<span className="text-sm font-normal text-burgundy-400">/g</span></div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -116,6 +91,21 @@ export function QuickCalculator({ rates }: QuickCalculatorProps) {
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400 text-right" />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CGST %</label>
+                  <input type="number" value={cgstPercent} onChange={(e) => setCgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
+                    step="0.1" min="0" max="14" placeholder="1.5"
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400 text-right" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">SGST %</label>
+                  <input type="number" value={sgstPercent} onChange={(e) => setSgstPercent(e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
+                    step="0.1" min="0" max="14" placeholder="1.5"
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400 text-right" />
+                </div>
+              </div>
+
               {/* Result */}
               <div className="bg-slate-800 rounded-xl p-4 space-y-2 text-sm">
                 <div className="flex justify-between text-slate-300">
@@ -129,7 +119,7 @@ export function QuickCalculator({ rates }: QuickCalculatorProps) {
                   </div>
                 )}
                 <div className="flex justify-between text-slate-300">
-                  <span>GST (3%)</span>
+                  <span>GST ({gstPercent}%)</span>
                   <span className="font-mono">{formatCurrency(gst)}</span>
                 </div>
                 <div className="flex justify-between text-white font-bold text-lg border-t border-slate-600 pt-2">

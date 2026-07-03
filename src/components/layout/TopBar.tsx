@@ -15,9 +15,10 @@ interface Rates {
 interface TopBarProps {
   user: { name?: string | null; email?: string | null; role: string };
   rates: Rates | null;
+  onMenuClick?: () => void;
 }
 
-export function TopBar({ user, rates }: TopBarProps) {
+export function TopBar({ user, rates, onMenuClick }: TopBarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
@@ -27,34 +28,35 @@ export function TopBar({ user, rates }: TopBarProps) {
   });
 
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm z-10">
-      <div className="flex items-center gap-4">
-        <p className="text-sm text-slate-500" suppressHydrationWarning>{today}</p>
+    <header className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 flex items-center justify-between shadow-sm z-10">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <button onClick={onMenuClick} className="lg:hidden text-slate-600 hover:text-slate-900 p-1 -ml-1 shrink-0">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <p className="text-sm text-slate-500 truncate hidden sm:block" suppressHydrationWarning>{today}</p>
         {rates && (
-          <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 border-l border-slate-200 pl-4">
-            <span className="font-medium text-slate-600">Silver:</span>
-            <span className="font-semibold text-slate-700">999 ₹{rates.rate999}</span>
-            <span>·</span>
-            <span>925 ₹{rates.rate925}</span>
-            <span>·</span>
-            <span>916 ₹{rates.rate916}</span>
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 border-l border-slate-200 pl-4">
+            <span className="font-medium text-slate-600">Today&apos;s Silver Rate:</span>
+            <span className="font-semibold text-slate-700">₹{rates.rate999}/g</span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Quick Rate Calculator */}
         <QuickCalculator rates={rates} />
 
         {/* New Bill */}
         <a
           href="/billing/new"
-          className="inline-flex items-center gap-2 bg-burgundy-500 hover:bg-burgundy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-burgundy-500 hover:bg-burgundy-600 text-white text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors shadow-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Bill
+          <span className="hidden sm:inline">New Bill</span>
         </a>
 
         {/* User menu */}

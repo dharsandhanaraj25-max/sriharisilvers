@@ -57,6 +57,7 @@ interface BillingItem {
   makingAmount: number;
   gstAmount: number;
   itemTotal: number;
+  isFixedPrice: boolean;
 }
 
 interface Customer {
@@ -98,6 +99,7 @@ function newItem(silverRate: SilverRate | null): BillingItem {
     makingAmount: 0,
     gstAmount: 0,
     itemTotal: 0,
+    isFixedPrice: false,
   };
 }
 
@@ -216,9 +218,27 @@ export function BillingForm({
     setItems((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
-        const updated = { ...item, ...updates };
+        let updated = { ...item, ...updates };
         if (updates.purity) {
           updated.silverRate = getRate(latestRate, updates.purity);
+        }
+        if (updates.isFixedPrice === true) {
+          updated = {
+            ...updated,
+            grossWeight: 0,
+            stoneWeight: 0,
+            wastagePercent: 0,
+            silverRate: 0,
+            makingChargeType: "FIXED",
+            makingChargeValue: item.makingChargeType === "FIXED" ? item.makingChargeValue : 0,
+          };
+        } else if (updates.isFixedPrice === false) {
+          updated = {
+            ...updated,
+            makingChargeType: "PER_GRAM",
+            makingChargeValue: 0,
+            silverRate: getRate(latestRate, updated.purity),
+          };
         }
         return recalcItem(updated, gstPercent);
       })
@@ -273,6 +293,7 @@ export function BillingForm({
           makingAmount: 0,
           gstAmount: 0,
           itemTotal: 0,
+          isFixedPrice: false,
         };
         const filled = recalcItem(base, gstPercent);
         return isBlank ? [...prev.slice(0, -1), filled] : [...prev, filled];
@@ -599,7 +620,7 @@ export function BillingForm({
                     {duplicateWarning}
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="Customer Name *"
@@ -675,21 +696,24 @@ export function BillingForm({
           </div>
         </div>
 
+        {/* Mobile hint */}
+        <p className="sm:hidden px-4 pt-3 text-xs text-slate-400">Scroll sideways to see all columns →</p>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-8">#</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 min-w-48">Item / Product</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-28">Purity</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Gr.Wt (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">St.Wt (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Waste %</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Net Wt (g)</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Rate/g</th>
-                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-28">Making</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Silver Val</th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Making</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 min-w-56">Item / Product</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-32">Purity</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Gross Weight (g)</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Stone Weight (g)</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Wastage %</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Net Weight (g)</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Rate (₹/g)</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-slate-500 w-32">Making Charge</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Silver Value</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-24">Making Amt</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-20">GST</th>
                 <th className="text-right px-3 py-3 text-xs font-semibold text-slate-500 w-28">Total</th>
                 <th className="w-8 px-3" />
@@ -697,16 +721,16 @@ export function BillingForm({
             </thead>
             <tbody>
               {items.map((item, idx) => (
-                <tr key={item.id} className="border-b border-slate-50">
-                  <td className="px-3 py-2 text-slate-500 text-xs">{idx + 1}</td>
-                  <td className="px-3 py-2">
-                    <div className="space-y-1">
+                <tr key={item.id} className="border-b border-slate-100 align-top hover:bg-slate-50/50">
+                  <td className="px-3 py-3 text-slate-500 text-xs">{idx + 1}</td>
+                  <td className="px-3 py-3">
+                    <div className="space-y-1.5">
                       <input
                         type="text"
                         value={item.itemName}
                         onChange={(e) => updateItem(item.id, { itemName: e.target.value })}
                         placeholder="Item name *"
-                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-burgundy-400"
+                        className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-burgundy-400"
                       />
                       <select
                         onChange={(e) => {
@@ -729,57 +753,82 @@ export function BillingForm({
                           ) : null
                         )}
                       </select>
+                      <label className="flex items-center gap-1.5 pt-0.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={item.isFixedPrice}
+                          onChange={(e) => updateItem(item.id, { isFixedPrice: e.target.checked })}
+                          className="w-3.5 h-3.5 accent-burgundy-500"
+                        />
+                        <span className="text-xs text-slate-500">Fixed price item (no weight)</span>
+                      </label>
                     </div>
                   </td>
-                  <td className="px-3 py-2">
-                    <select
-                      value={item.purity}
-                      onChange={(e) => updateItem(item.id, { purity: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-burgundy-400"
-                    >
-                      {Object.entries(PURITY_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>{v}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={item.grossWeight || ""} onChange={(e) => updateItem(item.id, { grossWeight: parseFloat(e.target.value) || 0 })}
-                      step="0.001" min="0" className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={item.stoneWeight || ""} onChange={(e) => updateItem(item.id, { stoneWeight: parseFloat(e.target.value) || 0 })}
-                      step="0.001" min="0" className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={item.wastagePercent || ""} onChange={(e) => updateItem(item.id, { wastagePercent: parseFloat(e.target.value) || 0 })}
-                      step="0.1" min="0" max="20" className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs text-slate-600 font-medium">{item.netWeight.toFixed(3)}</td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={item.silverRate || ""} onChange={(e) => updateItem(item.id, { silverRate: parseFloat(e.target.value) || 0 })}
-                      step="0.01" min="0" className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="space-y-1">
-                      <div className="flex border border-slate-200 rounded overflow-hidden text-xs w-fit">
-                        {[{ v: "PER_GRAM", l: "₹/g" }, { v: "PERCENT", l: "%" }, { v: "FIXED", l: "Flat" }].map(({ v, l }) => (
-                          <button key={v} type="button"
-                            onClick={() => updateItem(item.id, { makingChargeType: v })}
-                            className={`px-2 py-1 font-medium transition-colors ${item.makingChargeType === v ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
-                            {l}
-                          </button>
-                        ))}
-                      </div>
-                      <input type="number" value={item.makingChargeValue || ""} onChange={(e) => updateItem(item.id, { makingChargeValue: parseFloat(e.target.value) || 0 })}
-                        step="0.5" min="0" placeholder="0"
-                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs text-slate-700 font-medium">{formatCurrency(item.silverValue)}</td>
-                  <td className="px-3 py-2 text-right text-xs text-slate-700">{formatCurrency(item.makingAmount)}</td>
-                  <td className="px-3 py-2 text-right text-xs text-slate-700">{formatCurrency(item.gstAmount)}</td>
-                  <td className="px-3 py-2 text-right text-sm font-bold text-slate-800">{formatCurrency(item.itemTotal)}</td>
-                  <td className="px-3 py-2">
+                  {item.isFixedPrice ? (
+                    <>
+                      <td colSpan={6} className="px-3 py-3 text-center text-xs text-slate-400 italic">
+                        Flat-priced item — weight, purity and rate not applicable
+                      </td>
+                      <td className="px-3 py-3">
+                        <label className="block text-[11px] text-slate-400 mb-1">Item Price (₹)</label>
+                        <input type="number" value={item.makingChargeValue || ""} onChange={(e) => updateItem(item.id, { makingChargeValue: parseFloat(e.target.value) || 0 })}
+                          step="1" min="0" placeholder="20000"
+                          className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm text-right font-medium focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="px-3 py-3">
+                        <select
+                          value={item.purity}
+                          onChange={(e) => updateItem(item.id, { purity: e.target.value })}
+                          className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-burgundy-400"
+                        >
+                          {Object.entries(PURITY_LABELS).map(([k, v]) => (
+                            <option key={k} value={k}>{v}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-3">
+                        <input type="number" value={item.grossWeight || ""} onChange={(e) => updateItem(item.id, { grossWeight: parseFloat(e.target.value) || 0 })}
+                          step="0.001" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                      </td>
+                      <td className="px-3 py-3">
+                        <input type="number" value={item.stoneWeight || ""} onChange={(e) => updateItem(item.id, { stoneWeight: parseFloat(e.target.value) || 0 })}
+                          step="0.001" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                      </td>
+                      <td className="px-3 py-3">
+                        <input type="number" value={item.wastagePercent || ""} onChange={(e) => updateItem(item.id, { wastagePercent: parseFloat(e.target.value) || 0 })}
+                          step="0.1" min="0" max="20" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                      </td>
+                      <td className="px-3 py-3 text-right text-xs text-slate-600 font-medium pt-4">{item.netWeight.toFixed(3)}</td>
+                      <td className="px-3 py-3">
+                        <input type="number" value={item.silverRate || ""} onChange={(e) => updateItem(item.id, { silverRate: parseFloat(e.target.value) || 0 })}
+                          step="0.01" min="0" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="space-y-1.5">
+                          <div className="flex border border-slate-200 rounded-lg overflow-hidden text-xs w-fit">
+                            {[{ v: "PER_GRAM", l: "₹/g" }, { v: "PERCENT", l: "%" }, { v: "FIXED", l: "Flat" }].map(({ v, l }) => (
+                              <button key={v} type="button"
+                                onClick={() => updateItem(item.id, { makingChargeType: v })}
+                                className={`px-2 py-1 font-medium transition-colors ${item.makingChargeType === v ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+                                {l}
+                              </button>
+                            ))}
+                          </div>
+                          <input type="number" value={item.makingChargeValue || ""} onChange={(e) => updateItem(item.id, { makingChargeValue: parseFloat(e.target.value) || 0 })}
+                            step="0.5" min="0" placeholder="0"
+                            className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-xs text-right focus:outline-none focus:ring-1 focus:ring-burgundy-400" />
+                        </div>
+                      </td>
+                    </>
+                  )}
+                  <td className="px-3 py-3 text-right text-xs text-slate-700 font-medium pt-4">{formatCurrency(item.silverValue)}</td>
+                  <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.makingAmount)}</td>
+                  <td className="px-3 py-3 text-right text-xs text-slate-700 pt-4">{formatCurrency(item.gstAmount)}</td>
+                  <td className="px-3 py-3 text-right text-sm font-bold text-slate-800 pt-4">{formatCurrency(item.itemTotal)}</td>
+                  <td className="px-3 py-3 pt-4">
                     {items.length > 1 && (
                       <button onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -812,7 +861,7 @@ export function BillingForm({
           <span className="font-semibold text-slate-800">Old Silver Exchange / Trade-In</span>
         </label>
         {hasOldSilver && (
-          <div className="grid grid-cols-3 gap-4 bg-slate-50 rounded-lg p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 rounded-lg p-4">
             <div>
               <label className="block text-xs text-slate-600 mb-1">Old Silver Weight (g)</label>
               <input type="number" value={oldSilverWeight || ""} onChange={(e) => setOldSilverWeight(parseFloat(e.target.value) || 0)}
@@ -830,7 +879,7 @@ export function BillingForm({
               <input type="number" value={oldSilverRate || ""} onChange={(e) => setOldSilverRate(parseFloat(e.target.value) || 0)}
                 step="0.01" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400" />
             </div>
-            <div className="col-span-3 text-right text-sm font-semibold text-slate-700">
+            <div className="sm:col-span-3 text-right text-sm font-semibold text-slate-700">
               Old Silver Value: {formatCurrency(oldSilverDeduction)}
             </div>
           </div>

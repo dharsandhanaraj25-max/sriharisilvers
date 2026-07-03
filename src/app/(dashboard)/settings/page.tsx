@@ -269,6 +269,7 @@ export default function SettingsPage() {
           )}
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-100">
                 <tr>
@@ -305,6 +306,7 @@ export default function SettingsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}

@@ -105,6 +105,7 @@ export default function ReturnsPage() {
             <p className="font-medium">No returns found</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -143,7 +144,7 @@ export default function ReturnsPage() {
                       <span className="text-slate-400">Walk-in</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 max-w-[160px] truncate">{ret.reason}</td>
+                  <td className="px-4 py-3 text-slate-600 max-w-[160px] truncate" title={ret.reason}>{ret.reason}</td>
                   <td className="px-4 py-3">
                     <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
                       {REFUND_MODE_LABELS[ret.refundMode] || ret.refundMode}
@@ -168,6 +169,7 @@ export default function ReturnsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

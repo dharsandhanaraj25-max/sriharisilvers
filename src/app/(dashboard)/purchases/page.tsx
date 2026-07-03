@@ -50,6 +50,7 @@ export default function PurchasesPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
@@ -84,6 +85,7 @@ export default function PurchasesPage() {
             )}
           </tbody>
         </table>
+        </div>
         {total > 20 && (
           <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
             <p className="text-sm text-slate-500">Showing {(page-1)*20+1}–{Math.min(page*20,total)} of {total}</p>

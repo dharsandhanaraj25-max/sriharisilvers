@@ -186,6 +186,7 @@ function SalesReportView({ data }: { data: Record<string, unknown> }) {
 
       {/* Sales Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
@@ -217,6 +218,7 @@ function SalesReportView({ data }: { data: Record<string, unknown> }) {
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -229,17 +231,17 @@ function GSTReportView({ data }: { data: Record<string, unknown> }) {
   };
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
           <p className="text-xs text-slate-500">Taxable Value</p>
           <p className="text-xl font-bold text-slate-800 mt-1">{formatCurrency(d.summary?.totalTaxableValue || 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-5">
-          <p className="text-xs text-slate-500">CGST (1.5%)</p>
+          <p className="text-xs text-slate-500">CGST</p>
           <p className="text-xl font-bold text-blue-600 mt-1">{formatCurrency(d.summary?.totalCGST || 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-indigo-100 p-5">
-          <p className="text-xs text-slate-500">SGST (1.5%)</p>
+          <p className="text-xs text-slate-500">SGST</p>
           <p className="text-xl font-bold text-indigo-600 mt-1">{formatCurrency(d.summary?.totalSGST || 0)}</p>
         </div>
         <div className="bg-burgundy-50 rounded-xl shadow-sm border border-burgundy-200 p-5">
@@ -249,8 +251,9 @@ function GSTReportView({ data }: { data: Record<string, unknown> }) {
       </div>
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-4 border-b border-slate-100">
-          <p className="text-sm font-medium text-slate-700">GSTR-1 Data Export (HSN: 71131100 | GST Rate: 3%)</p>
+          <p className="text-sm font-medium text-slate-700">GSTR-1 Data Export (HSN: 71131100)</p>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
@@ -258,8 +261,8 @@ function GSTReportView({ data }: { data: Record<string, unknown> }) {
               <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500">Date</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500">Customer</th>
               <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">Taxable</th>
-              <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">CGST 1.5%</th>
-              <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">SGST 1.5%</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">CGST</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">SGST</th>
               <th className="text-right px-5 py-3 text-xs font-semibold text-slate-500">Total</th>
             </tr>
           </thead>
@@ -277,6 +280,7 @@ function GSTReportView({ data }: { data: Record<string, unknown> }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -292,6 +296,7 @@ function StockReportView({ data }: { data: Record<string, unknown> }) {
         <p className="text-sm font-medium text-slate-700">Stock Register — All Products</p>
         <button onClick={() => window.print()} className="text-xs text-burgundy-600 hover:text-burgundy-700 font-medium">Print Report</button>
       </div>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 border-b border-slate-100">
           <tr>
@@ -326,6 +331,7 @@ function StockReportView({ data }: { data: Record<string, unknown> }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

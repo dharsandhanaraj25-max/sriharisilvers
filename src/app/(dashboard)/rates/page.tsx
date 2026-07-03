@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { formatDateTime } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 
@@ -15,6 +16,7 @@ interface SilverRate {
 }
 
 export default function RatesPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const isAdmin = (session?.user as { role?: string })?.role === "ADMIN";
   const [latestRate, setLatestRate] = useState<SilverRate | null>(null);
@@ -53,6 +55,7 @@ export default function RatesPage() {
     if (res.ok) {
       setSuccess(true);
       fetchRates();
+      router.refresh();
       setTimeout(() => setSuccess(false), 3000);
     }
     setSaving(false);
@@ -77,7 +80,7 @@ export default function RatesPage() {
       {latestRate && (
         <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl p-5 text-white shadow-md">
           <p className="text-amber-100 text-sm mb-3">Current Market Rates (per gram)</p>
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
             {purities.map((p) => (
               <div key={p.key} className="text-center">
                 <p className="text-amber-100 text-xs">{p.key.replace("rate", "")} Purity</p>

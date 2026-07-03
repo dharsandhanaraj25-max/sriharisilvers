@@ -83,6 +83,13 @@ export async function POST(request: Request) {
         data: { name: body.newCustomer.name, phone: body.newCustomer.phone },
       });
       customerId = created.id;
+    } else if (customerId && body.customerName) {
+      // Same phone = same customer record. Only the name may need updating
+      // (e.g. a nickname was on file and the full name was given this time).
+      const existingCustomer = await tx.customer.findUnique({ where: { id: customerId } });
+      if (existingCustomer && existingCustomer.name !== body.customerName) {
+        await tx.customer.update({ where: { id: customerId }, data: { name: body.customerName } });
+      }
     }
 
     const newSale = await tx.sale.create({

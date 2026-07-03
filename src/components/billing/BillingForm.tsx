@@ -156,7 +156,7 @@ export function BillingForm({
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
-  const [duplicateWarning, setDuplicateWarning] = useState("");
+  const [phoneMatch, setPhoneMatch] = useState<Customer | null>(null);
 
   // Payment
   const [paymentMode, setPaymentMode] = useState("CASH");
@@ -344,28 +344,16 @@ export function BillingForm({
     setCustomerResults(data.customers || []);
   }
 
-  async function checkDuplicate(name: string, phone: string) {
-    if (phone.length >= 10) {
-      const res = await fetch(`/api/customers?search=${encodeURIComponent(phone)}&limit=1`);
-      const data = await res.json();
-      if (data.customers?.length > 0) {
-        setDuplicateWarning(`Phone ${phone} already registered as "${data.customers[0].name}". Use search to select them.`);
-        return;
-      }
-    }
-    if (name.length >= 3) {
-      const res = await fetch(`/api/customers?search=${encodeURIComponent(name)}&limit=3`);
-      const data = await res.json();
-      if (data.customers?.length > 0) {
-        setDuplicateWarning(`Similar name found: "${data.customers[0].name}" (${data.customers[0].phone}). Confirm if new customer.`);
-        return;
-      }
-    }
-    setDuplicateWarning("");
+  async function checkPhoneMatch(phone: string) {
+    if (phone.length !== 10) { setPhoneMatch(null); return; }
+    const res = await fetch(`/api/customers?search=${encodeURIComponent(phone)}&limit=5`);
+    const data = await res.json();
+    const exact = (data.customers || []).find((c: Customer) => c.phone === phone);
+    setPhoneMatch(exact || null);
   }
 
   function addNewCustomer() {
-    if (!newCustomerName.trim() || newCustomerPhone.trim().length !== 10) return;
+    if (!newCustomerName.trim() || newCustomerPhone.trim().length !== 10 || phoneMatch) return;
     // Not saved to the database yet — held in the bill draft and only created
     // when the bill itself is confirmed & saved, so canceling the bill doesn't
     // leave behind an orphaned customer record.
@@ -373,7 +361,18 @@ export function BillingForm({
     setShowAddCustomer(false);
     setNewCustomerName("");
     setNewCustomerPhone("");
-    setDuplicateWarning("");
+    setPhoneMatch(null);
+    markDirty();
+  }
+
+  function useMatchedCustomer(name: string) {
+    if (!phoneMatch) return;
+    // Same phone = same customer record — never a new row, just (optionally) a name update.
+    setCustomer({ id: phoneMatch.id, name, phone: phoneMatch.phone });
+    setShowAddCustomer(false);
+    setNewCustomerName("");
+    setNewCustomerPhone("");
+    setPhoneMatch(null);
     markDirty();
   }
 
@@ -392,6 +391,7 @@ export function BillingForm({
     try {
       const body = {
         customerId: customer.id || undefined,
+        customerName: customer.id ? customer.name : undefined,
         newCustomer: customer.id ? undefined : { name: customer.name, phone: customer.phone },
         silverRate: latestRate?.rate999 || 0,
         silverPurity: "999",
@@ -624,7 +624,7 @@ export function BillingForm({
                 )}
               </div>
               <button
-                onClick={() => { setShowAddCustomer(true); setDuplicateWarning(""); }}
+                onClick={() => { setShowAddCustomer(true); setPhoneMatch(null); }}
                 className="px-4 py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700"
               >
                 + New
@@ -635,20 +635,13 @@ export function BillingForm({
             {showAddCustomer && (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-slate-700">Add New Customer</h3>
-                {duplicateWarning && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-800">
-                    {duplicateWarning}
-                  </div>
-                )}
+                <p className="text-xs text-slate-400">We match customers by mobile number, not name — common names repeat, phone numbers don&apos;t.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="Customer Name *"
                     value={newCustomerName}
-                    onChange={(e) => {
-                      setNewCustomerName(e.target.value);
-                      if (e.target.value.length >= 3) checkDuplicate(e.target.value, newCustomerPhone);
-                    }}
+                    onChange={(e) => setNewCustomerName(e.target.value)}
                     className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400"
                   />
                   <input
@@ -659,15 +652,37 @@ export function BillingForm({
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "").slice(0, 10);
                       setNewCustomerPhone(val);
-                      if (val.length === 10) checkDuplicate(newCustomerName, val);
+                      checkPhoneMatch(val);
                     }}
                     className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-400"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={addNewCustomer} className="bg-burgundy-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-burgundy-600">Use This Customer</button>
-                  <button onClick={() => { setShowAddCustomer(false); setDuplicateWarning(""); }} className="border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-                </div>
+
+                {phoneMatch ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-amber-800">
+                      This number is already registered as <strong>&quot;{phoneMatch.name}&quot;</strong>. One phone number = one customer record, so pick how to proceed:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => useMatchedCustomer(phoneMatch.name)} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-700">
+                        Use as &quot;{phoneMatch.name}&quot;
+                      </button>
+                      {newCustomerName.trim() && newCustomerName.trim() !== phoneMatch.name && (
+                        <button onClick={() => useMatchedCustomer(newCustomerName.trim())} className="bg-burgundy-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-burgundy-600">
+                          Rename to &quot;{newCustomerName.trim()}&quot; &amp; use
+                        </button>
+                      )}
+                      <button onClick={() => { setShowAddCustomer(false); setPhoneMatch(null); setNewCustomerName(""); setNewCustomerPhone(""); }} className="text-slate-500 hover:text-slate-700 px-3 py-1.5 text-xs font-medium">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button onClick={addNewCustomer} className="bg-burgundy-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-burgundy-600">Use This Customer</button>
+                    <button onClick={() => { setShowAddCustomer(false); setPhoneMatch(null); }} className="border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+                  </div>
+                )}
               </div>
             )}
           </div>

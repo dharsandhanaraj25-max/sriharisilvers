@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface Sale {
   id: string;
@@ -139,7 +140,18 @@ export default function SalesPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-slate-400">Loading...</td></tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-slate-50">
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-28" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-36" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-5 w-14 rounded-full mx-auto" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-20 ml-auto" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-5 w-20 rounded-full mx-auto" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-10 mx-auto" /></td>
+                  </tr>
+                ))
               ) : sales.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-12 text-slate-400">No sales found</td></tr>
               ) : (

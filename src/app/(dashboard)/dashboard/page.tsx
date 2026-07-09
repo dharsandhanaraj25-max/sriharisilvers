@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import { CountUp } from "@/components/ui/CountUp";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
   const stats = [
     {
       label: "Today's Sales",
-      value: formatCurrency(todaySales._sum.total || 0),
+      value: <CountUp value={todaySales._sum.total || 0} format="currency" />,
       sub: `${todaySales._count} bills`,
       color: "from-emerald-500 to-teal-500",
       icon: (
@@ -58,7 +59,7 @@ export default async function DashboardPage() {
     },
     {
       label: "Month Sales",
-      value: formatCurrency(monthSales._sum.total || 0),
+      value: <CountUp value={monthSales._sum.total || 0} format="currency" />,
       sub: `${monthSales._count} bills this month`,
       color: "from-blue-500 to-indigo-500",
       icon: (
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
     },
     {
       label: "Silver Rate (999)",
-      value: latestRate ? `₹${latestRate.rate999.toFixed(2)}/g` : "Not Set",
+      value: latestRate ? <CountUp value={latestRate.rate999} format="decimal" prefix="₹" suffix="/g" /> : "Not Set",
       sub: "Today's rate",
       color: "from-amber-500 to-yellow-500",
       icon: (
@@ -80,7 +81,7 @@ export default async function DashboardPage() {
     },
     {
       label: "Total Customers",
-      value: totalCustomers.toString(),
+      value: <CountUp value={totalCustomers} />,
       sub: "Active customers",
       color: "from-purple-500 to-pink-500",
       icon: (
@@ -94,14 +95,14 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="animate-fade-in-down">
         <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
         <p className="text-slate-500 text-sm mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
       </div>
 
       {/* Silver Rate Banner */}
       {latestRate && (
-        <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-white shadow-md">
+        <div className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 animate-gradient rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-white shadow-md animate-fade-in-up animation-delay-100">
           <div>
             <p className="text-amber-100 text-sm font-medium">Today&apos;s Silver Rate</p>
             <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-1">
@@ -120,8 +121,8 @@ export default async function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 card-lift">
+        {stats.map((stat, i) => (
+          <div key={stat.label} className={`bg-white rounded-xl p-5 shadow-sm border border-slate-100 card-lift animate-fade-in-up animation-delay-${(i + 1) * 100}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">{stat.label}</p>
@@ -138,7 +139,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Sales */}
-        <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100">
+        <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 animate-fade-in-up animation-delay-300">
           <div className="p-5 border-b border-slate-100 flex items-center justify-between">
             <h2 className="font-semibold text-slate-800">Recent Sales</h2>
             <Link href="/billing" className="text-sm text-amber-600 hover:text-amber-700 font-medium">View All</Link>
@@ -188,7 +189,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions + Low Stock */}
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in-up animation-delay-400">
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
             <h2 className="font-semibold text-slate-800 mb-4">Quick Actions</h2>

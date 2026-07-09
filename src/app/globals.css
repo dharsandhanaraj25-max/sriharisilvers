@@ -90,6 +90,17 @@ body {
   animation: fade-in-up 0.3s ease-out both;
 }
 
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
 .animation-delay-100 { animation-delay: 0.1s; }
 .animation-delay-200 { animation-delay: 0.2s; }
 .animation-delay-300 { animation-delay: 0.3s; }
@@ -110,6 +121,7 @@ body {
   .animate-fade-in-down,
   .animate-fade-in,
   .animate-page-in,
+  .animate-gradient,
   .animate-marquee {
     animation: none;
   }

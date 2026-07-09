@@ -55,6 +55,10 @@ export const HSN_CODES = {
   silverBars: "71061000",
 };
 
+// Shop GSTIN shown on invoices, credit notes and across the site.
+// The Shop record in Settings can override it; this is the fallback.
+export const SHOP_GSTIN = "SHS01007";
+
 // Calculate silver value for an item
 export interface SilverCalculation {
   grossWeight: number;

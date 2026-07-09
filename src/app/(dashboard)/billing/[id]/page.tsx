@@ -99,6 +99,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
           change={sale.change}
           notes={sale.notes || ""}
           silverRate999={sale.silverRate}
+          status={sale.status}
         />
       </div>
     </div>

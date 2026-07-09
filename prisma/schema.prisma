@@ -35,7 +35,7 @@ model Shop {
   pincode   String  @default("636001")
   phone     String  @default("9952797597")
   email     String  @default("")
-  gstin     String  @default("")
+  gstin     String  @default("SHS01007")
   logo      String?
   bankName  String  @default("")
   bankAcc   String  @default("")

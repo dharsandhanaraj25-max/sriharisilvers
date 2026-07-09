@@ -33,7 +33,8 @@ export async function GET(request: Request) {
       (where.saleDate as Record<string, unknown>).lte = toDate;
     }
   }
-  if (status) where.status = status;
+  // Supports a single status or a comma-separated list (e.g. "RETURNED,PARTIALLY_RETURNED")
+  if (status) where.status = status.includes(",") ? { in: status.split(",") } : status;
 
   const [sales, total] = await Promise.all([
     prisma.sale.findMany({

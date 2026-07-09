@@ -295,7 +295,7 @@ VALUES ('usr_sales_001','Sales Staff','sales@sriharisilvers.com','$2b$10$kDRGUed
 
 -- Shop
 INSERT INTO "Shop" ("id","name","address","city","state","pincode","phone","email","gstin","upiId","bankName","bankAcc","bankIfsc")
-VALUES ('shop_001','Srihari Silvers','Ammapet Main Road','Salem','Tamil Nadu','636001','9952797597','sriharisilvers@gmail.com','','9952797597@upi','','','');
+VALUES ('shop_001','Srihari Silvers','Ammapet Main Road','Salem','Tamil Nadu','636001','9952797597','sriharisilvers@gmail.com','SHS01007','9952797597@upi','','','');
 
 -- Today silver rate
 INSERT INTO "SilverRate" ("id","rate999","rate925","rate916","rate875","rate800","createdAt")

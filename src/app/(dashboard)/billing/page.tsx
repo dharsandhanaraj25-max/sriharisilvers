@@ -16,6 +16,20 @@ interface Sale {
   createdBy: { name: string };
 }
 
+const STATUS_TABS = [
+  { label: "All Bills", value: "" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Voided", value: "VOID" },
+  { label: "Refunded", value: "RETURNED,PARTIALLY_RETURNED" },
+];
+
+const STATUS_BADGES: Record<string, { label: string; className: string }> = {
+  COMPLETED: { label: "Completed", className: "bg-emerald-100 text-emerald-700" },
+  VOID: { label: "VOID", className: "bg-slate-200 text-slate-600" },
+  RETURNED: { label: "REFUNDED", className: "bg-red-100 text-red-700" },
+  PARTIALLY_RETURNED: { label: "PARTIAL REFUND", className: "bg-amber-100 text-amber-700" },
+};
+
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [total, setTotal] = useState(0);
@@ -23,6 +37,7 @@ export default function SalesPage() {
   const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
 
   async function fetchSales() {
@@ -31,6 +46,7 @@ export default function SalesPage() {
     if (search) params.set("search", search);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
+    if (status) params.set("status", status);
     const res = await fetch(`/api/sales?${params}`);
     const data = await res.json();
     setSales(data.sales || []);
@@ -38,7 +54,7 @@ export default function SalesPage() {
     setLoading(false);
   }
 
-  useEffect(() => { fetchSales(); }, [page, search, from, to]);
+  useEffect(() => { fetchSales(); }, [page, search, from, to, status]);
 
   const todayTotal = sales.filter(s => {
     const d = new Date(s.saleDate);
@@ -59,6 +75,23 @@ export default function SalesPage() {
           </svg>
           New Bill
         </Link>
+      </div>
+
+      {/* Status tabs — voided and refunded bills get their own views */}
+      <div className="flex flex-wrap gap-2">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => { setStatus(tab.value); setPage(1); }}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              status === tab.value
+                ? "bg-burgundy-500 text-white shadow-sm"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
@@ -129,14 +162,14 @@ export default function SalesPage() {
                         {sale.paymentMode}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-right font-semibold text-slate-800">{formatCurrency(sale.total)}</td>
+                    <td className={`px-5 py-3 text-right font-semibold ${
+                      sale.status === "VOID" ? "text-slate-400 line-through" : "text-slate-800"
+                    }`}>{formatCurrency(sale.total)}</td>
                     <td className="px-5 py-3 text-center">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        sale.status === "COMPLETED" ? "bg-emerald-100 text-emerald-700" :
-                        sale.status === "CANCELLED" ? "bg-red-100 text-red-700" :
-                        "bg-amber-100 text-amber-700"
+                        (STATUS_BADGES[sale.status] || STATUS_BADGES.COMPLETED).className
                       }`}>
-                        {sale.status}
+                        {(STATUS_BADGES[sale.status] || { label: sale.status }).label}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-center">

@@ -138,7 +138,7 @@ export default function LoginPage() {
             ))}
           </div>
           <div className="pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Ph: 9952797597 &nbsp;·&nbsp; GST Compliant Billing v1.0</p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>GSTIN: SHS01007 &nbsp;·&nbsp; Ph: 9952797597 &nbsp;·&nbsp; GST Compliant Billing v1.0</p>
           </div>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-slate-200">
             <p className="text-xs text-center text-slate-400">
-              Srihari Silvers &bull; Billing System v1.0 &bull; GST Compliant
+              Srihari Silvers &bull; GSTIN: SHS01007 &bull; Billing System v1.0
             </p>
           </div>
         </div>

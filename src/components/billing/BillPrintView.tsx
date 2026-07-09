@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency, formatDateTime, SHOP_GSTIN } from "@/lib/utils";
 
 interface BillPrintViewProps {
   billNumber: string;
@@ -40,7 +40,27 @@ interface BillPrintViewProps {
   change: number;
   notes: string;
   silverRate999: number;
+  /** Sale status — VOID / RETURNED / PARTIALLY_RETURNED get a prominent stamp. */
+  status?: string;
 }
+
+const STATUS_STAMPS: Record<string, { stamp: string; message: string; color: string }> = {
+  VOID: {
+    stamp: "VOID",
+    message: "THIS BILL HAS BEEN VOIDED — NOT VALID FOR SALE OR TAX PURPOSES",
+    color: "71, 85, 105", // slate-600
+  },
+  RETURNED: {
+    stamp: "REFUNDED",
+    message: "THIS BILL HAS BEEN FULLY REFUNDED — A CREDIT NOTE HAS BEEN ISSUED",
+    color: "220, 38, 38", // red-600
+  },
+  PARTIALLY_RETURNED: {
+    stamp: "PARTIALLY REFUNDED",
+    message: "SOME ITEMS ON THIS BILL HAVE BEEN REFUNDED — SEE CREDIT NOTE",
+    color: "217, 119, 6", // amber-600
+  },
+};
 
 function toWords(n: number): string {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
@@ -77,14 +97,32 @@ export function BillPrintView({
   change,
   notes,
   silverRate999,
+  status = "COMPLETED",
 }: BillPrintViewProps) {
   const now = new Date();
   const amountInWords = toWords(Math.round(total)) + " Rupees Only";
   const gstTotal = cgstPercent + sgstPercent;
   const showGST = gstTotal > 0 && totalGST > 0;
+  const statusStamp = STATUS_STAMPS[status];
 
   return (
-    <div className="bg-white text-slate-900 max-w-2xl mx-auto p-6 text-sm print:max-w-full print:p-4 print:text-xs">
+    <div className="relative bg-white text-slate-900 max-w-2xl mx-auto p-6 text-sm print:max-w-full print:p-4 print:text-xs">
+      {/* Diagonal status stamp across the whole receipt */}
+      {statusStamp && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
+          <span
+            className="whitespace-nowrap font-black -rotate-[24deg] border-8 rounded-2xl px-8 py-3 tracking-[0.15em]"
+            style={{
+              fontSize: statusStamp.stamp.length > 10 ? "42px" : statusStamp.stamp.length > 4 ? "72px" : "120px",
+              color: `rgba(${statusStamp.color}, 0.22)`,
+              borderColor: `rgba(${statusStamp.color}, 0.22)`,
+            }}
+          >
+            {statusStamp.stamp}
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center border-b-4 border-[#800020] pb-4 mb-4">
         <h1 className="text-2xl font-extrabold tracking-wide text-[#800020] print:text-xl">
@@ -93,15 +131,33 @@ export function BillPrintView({
         <p className="text-sm text-slate-600 mt-1">Ammapet Main Road, Salem - 636 001, Tamil Nadu</p>
         <p className="text-sm text-slate-600">Ph: 9952797597</p>
         <div className="flex justify-center gap-6 mt-2 text-xs text-slate-500">
-          <span>GSTIN: _______________</span>
+          <span className="font-semibold">GSTIN: {SHOP_GSTIN}</span>
           <span>HSN Code: 71131100</span>
         </div>
-        <div className="mt-2">
+        <div className="mt-2 flex justify-center gap-2">
           <span className="inline-block border border-slate-400 text-slate-700 text-xs px-3 py-0.5 tracking-widest font-medium">
             TAX INVOICE
           </span>
+          {statusStamp && (
+            <span
+              className="inline-block border text-xs px-3 py-0.5 tracking-widest font-bold"
+              style={{ color: `rgb(${statusStamp.color})`, borderColor: `rgb(${statusStamp.color})` }}
+            >
+              {statusStamp.stamp}
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Explicit status notice */}
+      {statusStamp && (
+        <div
+          className="border-2 rounded-lg text-center py-2 px-4 mb-4 text-xs font-bold tracking-wider"
+          style={{ color: `rgb(${statusStamp.color})`, borderColor: `rgb(${statusStamp.color})` }}
+        >
+          {statusStamp.message}
+        </div>
+      )}
 
       {/* Bill Info */}
       <div className="flex justify-between mb-4">

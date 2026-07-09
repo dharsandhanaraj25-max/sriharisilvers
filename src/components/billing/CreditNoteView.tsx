@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, SHOP_GSTIN } from "@/lib/utils";
 
 interface CreditNoteItem {
   id: string;
@@ -50,15 +50,25 @@ export function CreditNoteView({
   });
 
   return (
-    <div className="font-mono text-sm p-8 max-w-2xl mx-auto bg-white">
+    <div className="relative font-mono text-sm p-8 max-w-2xl mx-auto bg-white">
+      {/* Diagonal REFUNDED stamp across the whole note */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
+        <span
+          className="whitespace-nowrap font-black -rotate-[24deg] border-8 rounded-2xl px-8 py-3 tracking-[0.15em]"
+          style={{ fontSize: "72px", color: "rgba(220,38,38,0.18)", borderColor: "rgba(220,38,38,0.18)" }}
+        >
+          REFUNDED
+        </span>
+      </div>
+
       {/* Header */}
       <div className="text-center mb-6 border-b-2 border-slate-800 pb-4">
         <h1 className="text-2xl font-bold tracking-wide text-slate-800">SRIHARI SILVERS</h1>
         <p className="text-xs text-slate-500 mt-1">Ammapet Main Road, Salem – 636001, Tamil Nadu</p>
-        <p className="text-xs text-slate-500">Ph: 9952797597</p>
+        <p className="text-xs text-slate-500">Ph: 9952797597 &nbsp;·&nbsp; GSTIN: {SHOP_GSTIN}</p>
         <div className="mt-3">
           <span className="inline-block bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full border border-red-300 tracking-widest">
-            CREDIT NOTE
+            CREDIT NOTE — REFUND
           </span>
         </div>
       </div>

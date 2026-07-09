@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { SHOP_GSTIN } from "@/lib/utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const shop = await prisma.shop.findFirst();
+  // Existing shop rows created before the GSTIN was issued have it empty
+  if (shop && !shop.gstin) shop.gstin = SHOP_GSTIN;
   return NextResponse.json(shop);
 }
 

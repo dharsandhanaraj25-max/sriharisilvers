@@ -46,7 +46,7 @@ async function main() {
         pincode: "636001",
         phone: "9952797597",
         email: "sriharisilvers@gmail.com",
-        gstin: "",
+        gstin: "SHS01007",
         upiId: "9952797597@upi",
       },
     });

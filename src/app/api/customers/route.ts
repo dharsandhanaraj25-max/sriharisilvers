@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -65,6 +67,8 @@ export async function POST(request: Request) {
       notes: notes || null,
     },
   });
+
+  revalidateTag(CACHE_TAGS.publicStats, "max");
 
   return NextResponse.json(customer, { status: 201 });
 }

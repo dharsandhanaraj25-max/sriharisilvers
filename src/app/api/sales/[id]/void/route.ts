@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export async function POST(
   _request: NextRequest,
@@ -56,6 +58,8 @@ export async function POST(
         data: { status: "VOID" },
       });
     });
+
+    revalidateTag(CACHE_TAGS.publicStats, "max");
 
     return NextResponse.json({ success: true });
   } catch (error) {

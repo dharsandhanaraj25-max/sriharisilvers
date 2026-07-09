@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { CountUp } from "@/components/ui/CountUp";
+import { getCachedLatestRate } from "@/lib/cache";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
         orderBy: { saleDate: "desc" },
         take: 8,
       }),
-      prisma.silverRate.findFirst({ orderBy: { date: "desc" } }),
+      getCachedLatestRate(),
       isAdmin
         ? prisma.product.findMany({
             where: { isActive: true, currentStock: { lte: 1 } },

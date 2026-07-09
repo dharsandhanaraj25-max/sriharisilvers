@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -43,6 +45,10 @@ export async function POST(request: Request) {
       rate800: parseFloat(rate800),
     },
   });
+
+  // New rate must show up instantly in the top bar, dashboard and login page
+  revalidateTag(CACHE_TAGS.rates, { expire: 0 });
+  revalidateTag(CACHE_TAGS.publicStats, { expire: 0 });
 
   return NextResponse.json(rate);
 }

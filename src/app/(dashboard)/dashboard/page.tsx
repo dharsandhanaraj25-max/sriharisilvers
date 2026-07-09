@@ -96,14 +96,14 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-1">Welcome back! Here's what's happening today.</p>
+        <p className="text-slate-500 text-sm mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
       </div>
 
       {/* Silver Rate Banner */}
       {latestRate && (
         <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-white shadow-md">
           <div>
-            <p className="text-amber-100 text-sm font-medium">Today's Silver Rate</p>
+            <p className="text-amber-100 text-sm font-medium">Today&apos;s Silver Rate</p>
             <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-1">
               <span className="text-lg font-bold">999: ₹{latestRate.rate999}/g</span>
               <span className="text-base">925: ₹{latestRate.rate925}/g</span>
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
+          <div key={stat.label} className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 card-lift">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">{stat.label}</p>
